@@ -1,0 +1,10 @@
+lib/
+node_modules/
+cache/
+broadcast/
+**/*.js
+public/
+script/
+src/
+test/
+foundry.toml

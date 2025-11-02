@@ -6,90 +6,106 @@ import { Shield, Users, Vote, Coins, Calendar, Heart, Brain, Globe } from 'lucid
 export default function Features() {
   const features = [
     {
-      category: 'Therapy Services',
+      category: 'Professional Therapy',
       icon: Heart,
-      color: 'text-primary-600 bg-primary-100',
+      color: 'from-primary-500 to-purple-600',
+      bgColor: 'from-primary-50 to-purple-50',
       items: [
         {
-          title: 'Verified Professionals',
-          description: 'Connect with licensed therapists verified through our DAO process',
-          icon: Shield
+          title: 'Licensed Therapists',
+          description: 'Connect with verified mental health professionals through our DAO-governed verification process',
+          icon: Shield,
+          metric: '500+ Verified'
         },
         {
-          title: 'Cross-Chain Payments',
-          description: 'Pay for sessions using TERAP tokens or stablecoins from any supported chain',
-          icon: Coins
+          title: 'Secure Payments',
+          description: 'Pay for sessions using TERAP tokens, stablecoins, or traditional payment methods across chains',
+          icon: Coins,
+          metric: 'Multi-Chain'
         },
         {
-          title: 'Flexible Sessions',
-          description: 'Book 1-on-1 or group sessions that fit your schedule and needs',
-          icon: Calendar
+          title: 'Flexible Scheduling',
+          description: 'Book individual or group sessions that work with your lifestyle and time zone',
+          icon: Calendar,
+          metric: '24/7 Available'
         }
       ]
     },
     {
-      category: 'Wellness Circles',
+      category: 'Community Wellness',
       icon: Users,
-      color: 'text-accent-600 bg-accent-100',
+      color: 'from-accent-500 to-orange-500',
+      bgColor: 'from-accent-50 to-orange-50',
       items: [
         {
-          title: 'Anonymous Support Groups',
-          description: 'Join token-gated communities focused on specific wellness topics',
-          icon: Users
+          title: 'Support Communities',
+          description: 'Join anonymous, token-gated support groups focused on specific mental health topics and goals',
+          icon: Users,
+          metric: '50+ Groups'
         },
         {
-          title: 'Reputation System',
-          description: 'Earn rewards for empathy, participation, and supporting others',
-          icon: Heart
+          title: 'Empathy Rewards',
+          description: 'Earn TERAP tokens for meaningful participation, emotional support, and community building',
+          icon: Heart,
+          metric: 'Token Incentives'
         },
         {
-          title: 'Community Moderation',
-          description: 'Verified facilitators ensure safe and supportive environments',
-          icon: Shield
+          title: 'Safe Moderation',
+          description: 'Licensed facilitators and AI-powered content moderation ensure supportive environments',
+          icon: Shield,
+          metric: 'Professional Led'
         }
       ]
     },
     {
-      category: 'DAO Governance',
+      category: 'Decentralized Governance',
       icon: Vote,
-      color: 'text-wellness-peace bg-purple-100',
+      color: 'from-purple-500 to-indigo-600',
+      bgColor: 'from-purple-50 to-indigo-50',
       items: [
         {
-          title: 'Community Voting',
-          description: 'Vote on funding priorities, therapist verification, and platform changes',
-          icon: Vote
+          title: 'Democratic Decisions',
+          description: 'Vote on therapist verification, funding priorities, and platform governance with TERAP tokens',
+          icon: Vote,
+          metric: 'Token Voting'
         },
         {
-          title: 'Mental Wellness Fund',
-          description: 'Allocate resources to nonprofits and community wellness projects',
-          icon: Coins
+          title: 'Wellness Treasury',
+          description: 'Community-controlled fund supporting mental health nonprofits and research initiatives',
+          icon: Coins,
+          metric: '$2M+ Allocated'
         },
         {
-          title: 'Research Partnerships',
-          description: 'Support mental health research with anonymized, opt-in data sharing',
-          icon: Brain
+          title: 'Research Impact',
+          description: 'Contribute to breakthrough mental health research through anonymized data sharing',
+          icon: Brain,
+          metric: '10+ Studies'
         }
       ]
     },
     {
-      category: 'Privacy & Ownership',
+      category: 'Privacy & Data Sovereignty',
       icon: Shield,
-      color: 'text-neutral-700 bg-neutral-100',
+      color: 'from-emerald-500 to-teal-600',
+      bgColor: 'from-emerald-50 to-teal-50',
       items: [
         {
-          title: 'Data Ownership',
-          description: 'You own all your wellness data, journals, and assessments',
-          icon: Shield
+          title: 'Complete Data Control',
+          description: 'Own and control all your therapy sessions, wellness data, and personal health insights',
+          icon: Shield,
+          metric: 'Self-Custody'
         },
         {
           title: 'Zero-Knowledge Privacy',
-          description: 'Share insights for research while maintaining complete anonymity',
-          icon: Brain
+          description: 'Advanced cryptography enables research participation while maintaining absolute anonymity',
+          icon: Brain,
+          metric: 'ZK-SNARK Powered'
         },
         {
-          title: 'Cross-Chain Identity',
-          description: 'Your wellness journey follows you across all supported blockchains',
-          icon: Globe
+          title: 'Universal Access',
+          description: 'Your mental health journey and credentials seamlessly work across all blockchain networks',
+          icon: Globe,
+          metric: '15+ Chains'
         }
       ]
     }
@@ -110,10 +126,10 @@ export default function Features() {
 
         <div className="space-y-16">
           {features.map((category, categoryIndex) => (
-            <div key={categoryIndex} className="bg-white rounded-2xl shadow-lg p-8 lg:p-12">
-              <div className="flex items-center space-x-4 mb-8">
-                <div className={`w-12 h-12 rounded-xl ${category.color} flex items-center justify-center`}>
-                  <category.icon className="w-6 h-6" />
+            <div key={categoryIndex} className={`bg-gradient-to-br ${category.bgColor} border border-white/50 rounded-3xl shadow-xl p-8 lg:p-12 backdrop-blur-sm`}>
+              <div className="flex items-center space-x-4 mb-10">
+                <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${category.color} flex items-center justify-center shadow-lg`}>
+                  <category.icon className="w-7 h-7 text-white" />
                 </div>
                 <h3 className="text-2xl font-display font-bold text-neutral-800">
                   {category.category}
@@ -122,14 +138,21 @@ export default function Features() {
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                 {category.items.map((item, itemIndex) => (
-                  <div key={itemIndex} className="space-y-4">
-                    <div className="flex items-center space-x-3">
-                      <item.icon className="w-5 h-5 text-neutral-600" />
-                      <h4 className="text-lg font-semibold text-neutral-800">
-                        {item.title}
-                      </h4>
+                  <div key={itemIndex} className="bg-white/60 backdrop-blur-sm rounded-2xl p-6 hover:bg-white/80 transition-all duration-300 hover:shadow-lg border border-white/50">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-8 h-8 bg-white/80 rounded-lg flex items-center justify-center">
+                          <item.icon className="w-4 h-4 text-neutral-700" />
+                        </div>
+                        <h4 className="text-lg font-semibold text-neutral-800">
+                          {item.title}
+                        </h4>
+                      </div>
+                      <span className="text-xs font-medium text-neutral-600 bg-white/70 px-2 py-1 rounded-full">
+                        {item.metric}
+                      </span>
                     </div>
-                    <p className="text-neutral-600 leading-relaxed">
+                    <p className="text-neutral-700 leading-relaxed text-sm">
                       {item.description}
                     </p>
                   </div>
@@ -140,22 +163,32 @@ export default function Features() {
         </div>
 
         {/* Call to Action */}
-        <div className="mt-16 text-center">
-          <div className="bg-gradient-to-r from-primary-500 to-accent-500 rounded-2xl p-8 lg:p-12 text-white">
-            <h3 className="text-3xl font-display font-bold mb-4">
-              Ready to Join the Wellness Revolution?
-            </h3>
-            <p className="text-xl mb-8 opacity-90 max-w-2xl mx-auto">
-              Connect your wallet to start your journey with TeraP. 
-              Whether you're seeking support or providing it, our community is here for you.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <button className="bg-white text-primary-600 font-medium px-8 py-3 rounded-lg hover:bg-neutral-100 transition-colors">
-                Connect Wallet
-              </button>
-              <button className="border-2 border-white text-white font-medium px-8 py-3 rounded-lg hover:bg-white hover:text-primary-600 transition-colors">
-                Learn More
-              </button>
+        <div className="mt-20 text-center">
+          <div className="bg-gradient-to-br from-primary-500 via-purple-600 to-accent-500 rounded-3xl p-10 lg:p-16 text-white shadow-2xl relative overflow-hidden">
+            {/* Background Pattern */}
+            <div className="absolute inset-0 opacity-10">
+              <div className="absolute top-10 left-10 w-20 h-20 border border-white/30 rounded-full"></div>
+              <div className="absolute bottom-10 right-10 w-32 h-32 border border-white/20 rounded-full"></div>
+              <div className="absolute top-1/2 left-1/3 w-16 h-16 border border-white/25 rounded-full"></div>
+            </div>
+            
+            <div className="relative z-10">
+              <h3 className="text-4xl font-display font-bold mb-6">
+                Transform Mental Healthcare Together
+              </h3>
+              <p className="text-xl mb-10 opacity-95 max-w-3xl mx-auto leading-relaxed">
+                Join thousands in building the future of accessible, private, and community-driven mental health support. 
+                Your wellness journey starts with a single connection.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
+                <button className="bg-white text-primary-600 font-semibold px-10 py-4 rounded-xl hover:bg-neutral-50 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 flex items-center space-x-2">
+                  <span>Start Your Journey</span>
+                  <Heart className="w-5 h-5" />
+                </button>
+                <button className="border-2 border-white/70 text-white font-semibold px-8 py-4 rounded-xl hover:bg-white/10 backdrop-blur-sm transition-all duration-300 hover:border-white">
+                  Explore Features
+                </button>
+              </div>
             </div>
           </div>
         </div>

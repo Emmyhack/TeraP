@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { Heart, Shield, Award, Lock, Plus, X, CheckCircle, ArrowLeft } from 'lucide-react';
 import Navigation from '../../../components/navigation/Navigation';
 import Footer from '../../../components/ui/Footer';
 import { useApp } from '../../../stores/AppProvider';
@@ -127,22 +128,26 @@ export default function TherapistRegisterPage() {
 
   if (!state.user.profile) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-primary-50 to-accent-50">
+      <div className="min-h-screen bg-gradient-to-br from-primary-50 via-purple-50 to-accent-50">
         <Navigation currentPage="therapist-dashboard" onPageChange={handlePageChange} />
         <main className="pt-20">
-          <div className="max-w-md mx-auto px-4 sm:px-6 lg:px-8 py-12">
-            <div className="card text-center">
-              <h1 className="text-2xl font-bold text-gray-900 mb-4">
-                Connect Wallet Required
+          <div className="max-w-md mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
+            <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl p-8 border border-white/50">
+              <div className="w-16 h-16 bg-gradient-to-br from-primary-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
+                <Shield className="w-8 h-8 text-white" />
+              </div>
+              <h1 className="text-3xl font-display font-bold text-neutral-800 mb-4">
+                Wallet Connection Required
               </h1>
-              <p className="text-gray-600 mb-6">
-                Please connect your wallet to register as a therapist.
+              <p className="text-neutral-600 mb-8 leading-relaxed">
+                Please connect your wallet to register as a professional therapist on the TeraP platform.
               </p>
               <button
                 onClick={() => router.push('/')}
-                className="btn-primary"
+                className="bg-gradient-to-r from-primary-500 to-purple-600 text-white font-semibold px-8 py-4 rounded-xl hover:from-primary-600 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 flex items-center space-x-2 mx-auto"
               >
-                Go to Home
+                <span>Go to Home</span>
+                <Heart className="w-5 h-5" />
               </button>
             </div>
           </div>
@@ -153,19 +158,40 @@ export default function TherapistRegisterPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary-50 to-accent-50">
+    <div className="min-h-screen bg-gradient-to-br from-neutral-50 via-primary-50/30 to-purple-50/30">
       <Navigation currentPage="therapist-dashboard" onPageChange={handlePageChange} />
       <main className="pt-20">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <div className="card overflow-hidden">
-            {/* Header */}
-            <div className="bg-gradient-to-r from-indigo-600 to-purple-600 px-8 py-6">
-              <h1 className="text-3xl font-bold text-white">
-                Register as a Therapist
-              </h1>
-              <p className="mt-2 text-indigo-100">
-                Join the TeraP platform and help clients on their wellness journey
-              </p>
+          {/* Back Button */}
+          <button
+            onClick={() => router.back()}
+            className="flex items-center space-x-2 text-neutral-600 hover:text-neutral-800 mb-8 transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span>Back to Dashboard</span>
+          </button>
+
+          <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-2xl overflow-hidden border border-white/50">
+            {/* Professional Header */}
+            <div className="bg-gradient-to-br from-primary-500 via-purple-600 to-accent-500 px-8 py-12 text-center relative overflow-hidden">
+              {/* Background Pattern */}
+              <div className="absolute inset-0 opacity-10">
+                <div className="absolute top-4 left-8 w-16 h-16 border border-white/30 rounded-full"></div>
+                <div className="absolute bottom-4 right-8 w-20 h-20 border border-white/20 rounded-full"></div>
+                <div className="absolute top-1/2 left-1/4 w-12 h-12 border border-white/25 rounded-full"></div>
+              </div>
+              
+              <div className="relative z-10">
+                <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
+                  <Award className="w-8 h-8 text-white" />
+                </div>
+                <h1 className="text-4xl font-display font-bold text-white mb-4">
+                  Professional Registration
+                </h1>
+                <p className="text-xl text-white/90 max-w-2xl mx-auto leading-relaxed">
+                  Join our network of licensed mental health professionals and help transform lives through Web3 innovation
+                </p>
+              </div>
             </div>
 
           {/* Form */}

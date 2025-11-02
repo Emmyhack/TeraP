@@ -46,7 +46,7 @@ function ErrorFallback({ error, resetErrorBoundary }: { error: Error; resetError
         </div>
         <h2 className="text-xl font-semibold text-gray-900 mb-2">Something went wrong</h2>
         <p className="text-gray-600 mb-4">
-          We're sorry, but there was an error loading the application.
+          We&apos;re sorry, but there was an error loading the application.
         </p>
         <div className="space-y-3">
           <button

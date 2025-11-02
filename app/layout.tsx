@@ -1,21 +1,7 @@
 import React from 'react';
-import { Inter, Poppins } from 'next/font/google';
 import { Metadata } from 'next';
 import { AppProvider } from '@/stores/AppProvider';
 import '@/styles/globals.css';
-
-const inter = Inter({ 
-  subsets: ['latin'],
-  variable: '--font-inter',
-  display: 'swap'
-});
-
-const poppins = Poppins({
-  weight: ['300', '400', '500', '600', '700'],
-  subsets: ['latin'],
-  variable: '--font-poppins',
-  display: 'swap'
-});
 
 export const metadata: Metadata = {
   title: 'TeraP Universal - Wellness DAO Platform',
@@ -41,8 +27,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`scroll-smooth ${inter.variable} ${poppins.variable}`}>
-      <body className="font-inter antialiased bg-gray-50 dark:bg-gray-900 min-h-screen">
+    <html lang="en" className="scroll-smooth">
+      <body className="font-sans antialiased bg-gray-50 dark:bg-gray-900 min-h-screen">
         <AppProvider>
           <div id="root" className="relative">
             {children}
