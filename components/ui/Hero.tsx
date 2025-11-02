@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useWeb3Wallet } from '@/components/wallet/Web3WalletProvider';
 import { useApp } from '@/stores/AppProvider';
 import { Heart, Brain, ArrowRight, Shield, Globe, Users, Link } from 'lucide-react';
+import AnimatedBackground from '@/components/ui/AnimatedBackground';
 
 export default function Hero() {
   const router = useRouter();
@@ -42,7 +43,10 @@ export default function Hero() {
   };
 
   return (
-    <section className="relative overflow-hidden py-20 lg:py-32">
+    <section className="relative overflow-hidden py-20 lg:py-32 bg-gradient-to-br from-blue-50 via-white to-purple-50">
+      {/* Animated Background */}
+      <AnimatedBackground />
+      
       {/* Background Elements */}
       <div className="absolute inset-0">
         <div className="absolute top-20 left-10 w-64 h-64 wellness-gradient rounded-full blur-3xl opacity-30"></div>

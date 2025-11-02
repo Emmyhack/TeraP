@@ -61,6 +61,14 @@ module.exports = {
         'fade-in': 'fadeIn 0.5s ease-in-out',
         'slide-up': 'slideUp 0.3s ease-out',
         'pulse-soft': 'pulseSoft 2s infinite',
+        'float-slow': 'float-slow 8s ease-in-out infinite',
+        'float-medium': 'float-medium 6s ease-in-out infinite',
+        'float-fast': 'float-fast 4s ease-in-out infinite',
+        'wave-slow': 'wave-slow 20s linear infinite',
+        'wave-medium': 'wave-medium 15s linear infinite',
+        'particle-slow': 'particle-slow 8s ease-in-out infinite',
+        'particle-medium': 'particle-medium 6s ease-in-out infinite',
+        'particle-fast': 'particle-fast 4s ease-in-out infinite',
       },
       keyframes: {
         fadeIn: {
@@ -74,6 +82,41 @@ module.exports = {
         pulseSoft: {
           '0%, 100%': { opacity: '1' },
           '50%': { opacity: '0.7' },
+        },
+        'float-slow': {
+          '0%, 100%': { transform: 'translateY(0px) rotate(0deg)' },
+          '50%': { transform: 'translateY(-20px) rotate(180deg)' },
+        },
+        'float-medium': {
+          '0%, 100%': { transform: 'translateY(0px) rotate(0deg)' },
+          '50%': { transform: 'translateY(-15px) rotate(270deg)' },
+        },
+        'float-fast': {
+          '0%, 100%': { transform: 'translateY(0px) rotate(0deg)' },
+          '50%': { transform: 'translateY(-10px) rotate(360deg)' },
+        },
+        'wave-slow': {
+          '0%': { transform: 'translateX(0%)' },
+          '100%': { transform: 'translateX(-100%)' },
+        },
+        'wave-medium': {
+          '0%': { transform: 'translateX(-100%)' },
+          '100%': { transform: 'translateX(0%)' },
+        },
+        'particle-slow': {
+          '0%': { opacity: '0', transform: 'translateY(0px)' },
+          '50%': { opacity: '1' },
+          '100%': { opacity: '0', transform: 'translateY(-100px)' },
+        },
+        'particle-medium': {
+          '0%': { opacity: '0', transform: 'translateY(0px)' },
+          '50%': { opacity: '0.8' },
+          '100%': { opacity: '0', transform: 'translateY(-80px)' },
+        },
+        'particle-fast': {
+          '0%': { opacity: '0', transform: 'translateY(0px)' },
+          '50%': { opacity: '0.6' },
+          '100%': { opacity: '0', transform: 'translateY(-60px)' },
         },
       },
     },
