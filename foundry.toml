@@ -1,0 +1,23 @@
+[profile.default]
+src = "contracts"
+out = "out"
+libs = ["lib"]
+ffi = true
+ast = true
+remappings = [
+    "@openzeppelin/contracts/=lib/openzeppelin-contracts/contracts/",
+    "@openzeppelin/contracts-upgradeable/=lib/openzeppelin-contracts-upgradeable/contracts/",
+    "@zetachain/protocol-contracts/=lib/protocol-contracts/"
+]
+
+[dependencies]
+forge-std = "1.8.2"
+openzeppelin-contracts = "5.0.2"
+openzeppelin-contracts-upgradeable = "5.0.2"
+
+[profile.default.fuzz]
+runs = 1000
+
+[profile.ci]
+fuzz = { runs = 10000 }
+invariant = { runs = 1000 }
