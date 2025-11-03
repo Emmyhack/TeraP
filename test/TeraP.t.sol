@@ -4,6 +4,7 @@ pragma solidity ^0.8.19;
 import {Test} from "forge-std/Test.sol";
 import {TeraPToken} from "../contracts/TeraPToken.sol";
 import {TeraPCore} from "../contracts/TeraPCore.sol";
+import {ERC1967Proxy} from "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol";
 
 contract TeraPTest is Test {
     TeraPToken public token;
@@ -17,13 +18,31 @@ contract TeraPTest is Test {
     function setUp() public {
         vm.startPrank(owner);
         
-        // Deploy the contracts
-        token = new TeraPToken();
-        core = new TeraPCore();
+        // Deploy implementations
+        TeraPToken tokenImpl = new TeraPToken();
+        TeraPCore coreImpl = new TeraPCore();
         
-        // Initialize contracts properly
-        token.initialize("TeraP Token", "TERAP", owner, owner);
-        core.initialize(address(token), "TeraP Session NFT", "TERAP-NFT", mockGateway);
+        // Deploy token proxy
+        bytes memory tokenInitData = abi.encodeWithSelector(
+            TeraPToken.initialize.selector,
+            "TeraP Token",
+            "TERAP",
+            owner,
+            owner
+        );
+        ERC1967Proxy tokenProxy = new ERC1967Proxy(address(tokenImpl), tokenInitData);
+        token = TeraPToken(address(tokenProxy));
+        
+        // Deploy core proxy
+        bytes memory coreInitData = abi.encodeWithSelector(
+            TeraPCore.initialize.selector,
+            address(token),
+            "TeraP Session NFT",
+            "TERAP-NFT",
+            mockGateway
+        );
+        ERC1967Proxy coreProxy = new ERC1967Proxy(address(coreImpl), coreInitData);
+        core = TeraPCore(address(coreProxy));
         
         // Grant minting role to core contract
         token.updateMinter(address(core));
@@ -58,7 +77,9 @@ contract TeraPTest is Test {
         
         // Check staking results
         assertEq(token.stakedBalances(client), stakeAmount);
-        assertEq(token.getVotes(client), stakeAmount * 2); // 2x voting power
+        // Voting power = remaining balance + (staked * 2)
+        uint256 expectedVotingPower = (10000 * 10**18 - stakeAmount) + (stakeAmount * 2);
+        assertEq(token.getVotingPower(client), expectedVotingPower);
         
         vm.stopPrank();
     }
@@ -71,12 +92,14 @@ contract TeraPTest is Test {
         specializations[1] = "Depression";
         
         bytes32 credentialHash = keccak256("LIC123456");
+        bytes32 encryptionKey = keccak256("PUBKEY123");
         core.registerTherapist(
             "Dr. Smith",
             specializations,
             "Licensed Clinical Therapist",
             100 * 10**18, // 100 TERAP per hour
-            credentialHash
+            credentialHash,
+            encryptionKey
         );
         
         vm.stopPrank();
@@ -88,12 +111,14 @@ contract TeraPTest is Test {
         string[] memory specializations = new string[](1);
         specializations[0] = "General";
         bytes32 credentialHash = keccak256("LIC789");
+        bytes32 encryptionKey = keccak256("PUBKEY789");
         core.registerTherapist(
             "Dr. Johnson",
             specializations,
             "General Therapist",
             80 * 10**18, // 80 TERAP per hour
-            credentialHash
+            credentialHash,
+            encryptionKey
         );
         vm.stopPrank();
         
@@ -104,6 +129,10 @@ contract TeraPTest is Test {
         // Then book session as client
         vm.startPrank(client);
         uint256 sessionDuration = 60; // 60 minutes
+        uint256 sessionCost = 80 * 10**18; // 80 TERAP per hour
+        
+        // Approve tokens for session payment
+        token.approve(address(core), sessionCost);
         
         // Book session
         core.bookSession(therapist, sessionDuration, "Encrypted session notes");
@@ -115,6 +144,9 @@ contract TeraPTest is Test {
         vm.startPrank(client);
         
         uint256 entryStake = 50 * 10**18; // 50 TERAP entry stake
+        
+        // Approve tokens for wellness circle entry stake
+        token.approve(address(core), entryStake);
         
         core.createWellnessCircle(
             "Anxiety Support Circle",
@@ -166,7 +198,7 @@ contract TeraPTest is Test {
         vm.stopPrank();
     }
     
-    function testFailUnauthorizedOperations() public {
+    function test_RevertWhen_UnauthorizedMinting() public {
         vm.startPrank(address(0x999)); // Random unauthorized address
         
         // Should fail: only owner can mint tokens

@@ -3,18 +3,32 @@ pragma solidity ^0.8.19;
 
 import {Test} from "forge-std/Test.sol";
 import {TeraPToken} from "../contracts/TeraPToken.sol";
+import {ERC1967Proxy} from "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol";
 
 contract SimpleTokenTest is Test {
     TeraPToken public token;
     address public owner = address(0x123);
     
     function setUp() public {
-        // Deploy and initialize from owner address
-        vm.prank(owner);
-        token = new TeraPToken();
+        vm.startPrank(owner);
         
-        vm.prank(owner);
-        token.initialize("TeraP Test Token", "TEST", owner, owner);
+        // Deploy implementation
+        TeraPToken implementation = new TeraPToken();
+        
+        // Prepare initialization data
+        bytes memory initData = abi.encodeWithSelector(
+            TeraPToken.initialize.selector,
+            "TeraP Test Token",
+            "TEST",
+            owner,
+            owner
+        );
+        
+        // Deploy proxy
+        ERC1967Proxy proxy = new ERC1967Proxy(address(implementation), initData);
+        token = TeraPToken(address(proxy));
+        
+        vm.stopPrank();
     }
     
     function testTokenInitialization() public view {
