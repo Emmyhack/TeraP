@@ -345,7 +345,7 @@ export const EncryptedChat: React.FC<EncryptedChatProps> = ({
                     )}
                     <div className="flex-1">
                       <p className="text-sm">
-                        {message.messageType === 'system' 
+                        {message.senderId === 'system' 
                           ? message.encryptedContent 
                           : `[Encrypted] ${message.encryptedContent.slice(0, 50)}...`
                         }

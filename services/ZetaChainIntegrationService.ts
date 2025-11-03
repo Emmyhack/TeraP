@@ -11,16 +11,18 @@ export class ZetaChainIntegrationService {
   async initialize(signer?: ethers.Signer) {
     try {
       if (typeof window === 'undefined') return null;
-      const toolkit = await import('@zetachain/toolkit').catch(() => null);
-      if (!toolkit) {
-        console.warn('ZetaChain toolkit not available');
+      // ZetaChain toolkit integration - optional dependency
+      try {
+        const toolkit = await import('@zetachain/toolkit' as any);
+        this.zetaClient = new toolkit.ZetaChainClient({
+          network: this.isTestnet ? 'testnet' : 'mainnet',
+          signer
+        });
+        return this.zetaClient;
+      } catch (importError) {
+        console.warn('ZetaChain toolkit not available - using fallback');
         return null;
       }
-      this.zetaClient = new toolkit.ZetaChainClient({
-        network: this.isTestnet ? 'testnet' : 'mainnet',
-        signer
-      });
-      return this.zetaClient;
     } catch (error) {
       console.warn('ZetaChain client initialization failed:', error);
       return null;

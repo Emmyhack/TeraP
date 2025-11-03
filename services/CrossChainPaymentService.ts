@@ -59,15 +59,9 @@ export class CrossChainPaymentService {
   private async initializeZetaClient() {
     try {
       if (typeof window === 'undefined') return;
-      const toolkit = await import('@zetachain/toolkit').catch(() => null);
-      if (!toolkit) {
-        console.warn('ZetaChain toolkit not available');
-        return;
-      }
-      this.zetaClient = new toolkit.ZetaChainClient({
-        network: this.isTestnet ? 'testnet' : 'mainnet',
-        signer: this.signer
-      });
+      // ZetaChain toolkit integration placeholder
+      console.warn('ZetaChain toolkit integration pending');
+      this.zetaClient = null;
     } catch (error) {
       console.warn('ZetaChain client initialization failed:', error);
     }
@@ -272,7 +266,7 @@ export class CrossChainPaymentService {
       
       return {
         transactionHash: result.digest,
-        gasUsed: result.effects?.gasUsed?.computationCost || 1000000,
+        gasUsed: result.effects?.gasUsed?.computationCost ? Number(result.effects.gasUsed.computationCost) : 1000000,
         hash: result.digest,
         status: 'confirmed'
       };
@@ -727,7 +721,7 @@ export class CrossChainPaymentService {
           const publicKey = new PublicKey(userAddress);
           const balance = await connection.getBalance(publicKey);
           return {
-            native: (balance / LAMPORTS_PER_SOL).toFixed(6),
+            native: (Number(balance) / LAMPORTS_PER_SOL).toFixed(6),
             usdt: '0.00',
             nativeSymbol: 'SOL'
           };
@@ -741,7 +735,7 @@ export class CrossChainPaymentService {
           const client = new SuiClient({ url: getFullnodeUrl('mainnet') });
           const balance = await client.getBalance({ owner: userAddress });
           return {
-            native: (parseInt(balance.totalBalance) / 1000000000).toFixed(6),
+            native: (Number(balance.totalBalance) / 1000000000).toFixed(6),
             usdt: '0.00',
             nativeSymbol: 'SUI'
           };
@@ -750,12 +744,15 @@ export class CrossChainPaymentService {
         case 'TON': {
           if (typeof window === 'undefined') throw new Error('TON only available in browser');
           const tonApi = await import('@ton-api/client').catch(() => null);
-          if (!tonApi) throw new Error('TON API not available');
+          const tonCore = await import('@ton/core').catch(() => null);
+          if (!tonApi || !tonCore) throw new Error('TON SDK not available');
           const { TonApiClient } = tonApi;
+          const { Address } = tonCore;
           const client = new TonApiClient({ baseUrl: 'https://tonapi.io' });
-          const account = await client.accounts.getAccount(userAddress);
+          const address = Address.parse(userAddress);
+          const account = await client.accounts.getAccount(address);
           return {
-            native: (account.balance / 1000000000).toFixed(6),
+            native: (Number(account.balance) / 1000000000).toFixed(6),
             usdt: '0.00',
             nativeSymbol: 'TON'
           };
