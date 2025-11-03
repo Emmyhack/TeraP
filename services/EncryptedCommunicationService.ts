@@ -332,17 +332,23 @@ export class EncryptedCommunicationService {
       const configuration: RTCConfiguration = {
         iceServers: [
           { urls: 'stun:stun.l.google.com:19302' },
-          // Add TURN servers for production
+          { urls: 'stun:stun1.l.google.com:19302' },
+          // Add TURN servers for production NAT traversal
         ]
       };
 
       const peerConnection = new RTCPeerConnection(configuration);
       this.webrtcConnections.set(callId, peerConnection);
 
-      // Get user media (camera and microphone)
+      // Get user media (audio only for privacy)
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: true,
-        audio: true
+        video: false,
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true,
+          sampleRate: 48000
+        }
       });
 
       // Add local stream to peer connection
@@ -353,7 +359,11 @@ export class EncryptedCommunicationService {
       // Handle remote stream
       peerConnection.ontrack = (event) => {
         console.log('Received remote stream');
-        // In a real implementation, you'd display this in a video element
+        const [remoteStream] = event.streams;
+        // Emit event for UI to handle
+        window.dispatchEvent(new CustomEvent('remoteStream', { 
+          detail: { stream: remoteStream, callId } 
+        }));
       };
 
       // Handle ICE candidates
@@ -366,6 +376,28 @@ export class EncryptedCommunicationService {
           }));
         }
       };
+
+      // Handle connection state changes
+      peerConnection.onconnectionstatechange = () => {
+        console.log('Connection state:', peerConnection.connectionState);
+        window.dispatchEvent(new CustomEvent('connectionStateChange', {
+          detail: { state: peerConnection.connectionState, callId }
+        }));
+      };
+
+      // Create and send offer for outgoing calls
+      if (userId) {
+        const offer = await peerConnection.createOffer();
+        await peerConnection.setLocalDescription(offer);
+        
+        if (this.socket) {
+          this.socket.send(JSON.stringify({
+            type: 'call_offer',
+            callId,
+            offer: offer
+          }));
+        }
+      }
 
       console.log('WebRTC connection initialized for call:', callId);
     } catch (error) {
@@ -389,6 +421,9 @@ export class EncryptedCommunicationService {
       case 'call_answer':
         this.handleCallAnswer(data);
         break;
+      case 'call_offer':
+        this.handleCallOffer(data);
+        break;
     }
   }
 
@@ -411,10 +446,28 @@ export class EncryptedCommunicationService {
     }
   }
 
-  private handleCallAnswer(data: any): void {
+  private async handleCallAnswer(data: any): Promise<void> {
     const peerConnection = this.webrtcConnections.get(data.callId);
     if (peerConnection) {
-      peerConnection.setRemoteDescription(new RTCSessionDescription(data.answer));
+      await peerConnection.setRemoteDescription(new RTCSessionDescription(data.answer));
+    }
+  }
+
+  private async handleCallOffer(data: any): Promise<void> {
+    const peerConnection = this.webrtcConnections.get(data.callId);
+    if (peerConnection) {
+      await peerConnection.setRemoteDescription(new RTCSessionDescription(data.offer));
+      
+      const answer = await peerConnection.createAnswer();
+      await peerConnection.setLocalDescription(answer);
+      
+      if (this.socket) {
+        this.socket.send(JSON.stringify({
+          type: 'call_answer',
+          callId: data.callId,
+          answer: answer
+        }));
+      }
     }
   }
 

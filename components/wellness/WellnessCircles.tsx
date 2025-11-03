@@ -5,6 +5,7 @@ import React, { useState } from 'react';
 import { Users, MessageCircle, Lock, Globe, Calendar, Heart, Shield, Plus } from 'lucide-react';
 import { useWeb3Wallet } from '@/components/wallet/Web3WalletProvider';
 import { useApp } from '@/stores/AppProvider';
+import CircleChat from './CircleChat';
 
 interface WellnessCircle {
   id: string;
@@ -34,6 +35,7 @@ const WellnessCircles: React.FC = () => {
   const { dispatch } = useApp();
   const [activeTab, setActiveTab] = useState<'browse' | 'my-circles' | 'create'>('browse');
   const [selectedCircle, setSelectedCircle] = useState<WellnessCircle | null>(null);
+  const [activeChatCircle, setActiveChatCircle] = useState<WellnessCircle | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
 
@@ -304,7 +306,10 @@ const WellnessCircles: React.FC = () => {
                       View Details
                     </button>
                     {circle.isJoined ? (
-                      <button className="btn-primary flex-1 text-sm py-2">
+                      <button 
+                        onClick={() => setActiveChatCircle(circle)}
+                        className="btn-primary flex-1 text-sm py-2"
+                      >
                         Enter Circle
                       </button>
                     ) : (
@@ -355,7 +360,10 @@ const WellnessCircles: React.FC = () => {
                       </div>
                     </div>
 
-                    <button className="btn-primary w-full flex items-center justify-center space-x-2">
+                    <button 
+                      onClick={() => setActiveChatCircle(circle)}
+                      className="btn-primary w-full flex items-center justify-center space-x-2"
+                    >
                       <MessageCircle className="h-4 w-4" />
                       <span>Enter Circle</span>
                     </button>
@@ -547,7 +555,10 @@ const WellnessCircles: React.FC = () => {
 
                 {selectedCircle.isJoined ? (
                   <button
-                    onClick={() => setSelectedCircle(null)}
+                    onClick={() => {
+                      setActiveChatCircle(selectedCircle);
+                      setSelectedCircle(null);
+                    }}
                     className="btn-primary w-full"
                   >
                     Enter Circle
@@ -567,6 +578,17 @@ const WellnessCircles: React.FC = () => {
               </div>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Circle Chat */}
+      {activeChatCircle && (
+        <div className="fixed inset-0 z-50">
+          <CircleChat
+            circleId={activeChatCircle.id}
+            circleName={activeChatCircle.name}
+            onBack={() => setActiveChatCircle(null)}
+          />
         </div>
       )}
     </div>

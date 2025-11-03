@@ -2,17 +2,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { 
   Send, 
-  Video, 
-  VideoOff, 
   Mic, 
   MicOff, 
   Phone, 
   PhoneOff, 
   Lock, 
   Shield, 
-  FileText,
-  Paperclip,
-  AlertTriangle
+  Paperclip
 } from 'lucide-react';
 import { encryptedCommunicationService, EncryptedMessage, ChatSession } from '@/services/EncryptedCommunicationService';
 import { useWeb3Wallet } from '@/components/wallet/Web3WalletProvider';
@@ -37,15 +33,14 @@ export const EncryptedChat: React.FC<EncryptedChatProps> = ({
   const [currentMessage, setCurrentMessage] = useState('');
   const [isConnected, setIsConnected] = useState(false);
   const [chatSession, setChatSession] = useState<ChatSession | null>(null);
-  const [isVideoActive, setIsVideoActive] = useState(false);
   const [isAudioActive, setIsAudioActive] = useState(false);
   const [isCallActive, setIsCallActive] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState<'connecting' | 'connected' | 'disconnected'>('connecting');
   const [encryptionStatus, setEncryptionStatus] = useState<'secure' | 'insecure'>('secure');
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const localVideoRef = useRef<HTMLVideoElement>(null);
-  const remoteVideoRef = useRef<HTMLVideoElement>(null);
+  const localAudioRef = useRef<HTMLAudioElement>(null);
+  const remoteAudioRef = useRef<HTMLAudioElement>(null);
 
   // Initialize chat session
   useEffect(() => {
@@ -85,7 +80,7 @@ export const EncryptedChat: React.FC<EncryptedChatProps> = ({
     initializeSession();
   }, [address, sessionId, therapistId, clientId]);
 
-  // Listen for incoming messages
+  // Listen for incoming messages and WebRTC events
   useEffect(() => {
     const handleEncryptedMessage = (event: CustomEvent) => {
       const message = event.detail as EncryptedMessage;
@@ -94,22 +89,51 @@ export const EncryptedChat: React.FC<EncryptedChatProps> = ({
       }
     };
 
-    const handleVideoCallRequest = (event: CustomEvent) => {
+    const handleVoiceCallRequest = (event: CustomEvent) => {
       const data = event.detail;
       if (data.sessionId === sessionId) {
-        // Show call incoming UI
         setIsCallActive(true);
+        // Auto-accept call for demo (in production, show accept/decline UI)
+        acceptVoiceCall(data.callId);
+      }
+    };
+
+    const handleRemoteStream = (event: CustomEvent) => {
+      const { stream } = event.detail;
+      if (remoteAudioRef.current) {
+        remoteAudioRef.current.srcObject = stream;
       }
     };
 
     window.addEventListener('encryptedMessage', handleEncryptedMessage as EventListener);
-    window.addEventListener('videoCallRequest', handleVideoCallRequest as EventListener);
+    window.addEventListener('videoCallRequest', handleVoiceCallRequest as EventListener);
+    window.addEventListener('remoteStream', handleRemoteStream as EventListener);
 
     return () => {
       window.removeEventListener('encryptedMessage', handleEncryptedMessage as EventListener);
-      window.removeEventListener('videoCallRequest', handleVideoCallRequest as EventListener);
+      window.removeEventListener('videoCallRequest', handleVoiceCallRequest as EventListener);
+      window.removeEventListener('remoteStream', handleRemoteStream as EventListener);
     };
   }, [sessionId]);
+
+  // Accept incoming voice call
+  const acceptVoiceCall = async (callId: string) => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: false,
+        audio: true
+      });
+      
+      if (localAudioRef.current) {
+        localAudioRef.current.srcObject = stream;
+      }
+      
+      setIsAudioActive(true);
+      
+    } catch (error) {
+      console.error('Failed to accept voice call:', error);
+    }
+  };
 
   // Auto scroll to bottom
   useEffect(() => {
@@ -135,24 +159,46 @@ export const EncryptedChat: React.FC<EncryptedChatProps> = ({
     }
   };
 
-  // Start video call
-  const startVideoCall = async () => {
+  // Start voice call
+  const startVoiceCall = async () => {
     if (!address || !chatSession) return;
 
     try {
-      await encryptedCommunicationService.startVideoCall(sessionId, address);
+      const voiceCall = await encryptedCommunicationService.startVideoCall(sessionId, address);
       setIsCallActive(true);
-      setIsVideoActive(true);
       setIsAudioActive(true);
+      
+      // Get audio only
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: false,
+        audio: true
+      });
+      
+      if (localAudioRef.current) {
+        localAudioRef.current.srcObject = stream;
+      }
+      
     } catch (error) {
-      console.error('Failed to start video call:', error);
+      console.error('Failed to start voice call:', error);
+      alert('Failed to access microphone. Please check permissions.');
     }
   };
 
-  // End video call
-  const endVideoCall = async () => {
+  // End voice call
+  const endVoiceCall = async () => {
     try {
-      // Find active call
+      // Stop local audio streams
+      if (localAudioRef.current?.srcObject) {
+        const stream = localAudioRef.current.srcObject as MediaStream;
+        stream.getTracks().forEach(track => track.stop());
+        localAudioRef.current.srcObject = null;
+      }
+      
+      if (remoteAudioRef.current?.srcObject) {
+        remoteAudioRef.current.srcObject = null;
+      }
+      
+      // Find and end active call
       const calls = encryptedCommunicationService['videoCalls'];
       const activeCall = Array.from(calls.values()).find(call => call.sessionId === sessionId);
       
@@ -161,10 +207,9 @@ export const EncryptedChat: React.FC<EncryptedChatProps> = ({
       }
       
       setIsCallActive(false);
-      setIsVideoActive(false);
       setIsAudioActive(false);
     } catch (error) {
-      console.error('Failed to end video call:', error);
+      console.error('Failed to end voice call:', error);
     }
   };
 
@@ -205,31 +250,28 @@ export const EncryptedChat: React.FC<EncryptedChatProps> = ({
         </div>
 
         <div className="flex items-center space-x-2">
-          {/* Video Call Controls */}
+          {/* Voice Call Controls */}
           {!isCallActive ? (
             <button
-              onClick={startVideoCall}
+              onClick={startVoiceCall}
               className="p-2 text-blue-600 hover:bg-blue-50 rounded-full transition-colors"
-              title="Start Video Call"
+              title="Start Voice Call"
             >
-              <Video className="h-5 w-5" />
+              <Phone className="h-5 w-5" />
             </button>
           ) : (
             <>
               <button
-                onClick={() => setIsVideoActive(!isVideoActive)}
-                className={`p-2 rounded-full transition-colors ${
-                  isVideoActive 
-                    ? 'text-blue-600 hover:bg-blue-50' 
-                    : 'text-red-600 hover:bg-red-50 bg-red-50'
-                }`}
-                title={isVideoActive ? 'Turn off video' : 'Turn on video'}
-              >
-                {isVideoActive ? <Video className="h-5 w-5" /> : <VideoOff className="h-5 w-5" />}
-              </button>
-
-              <button
-                onClick={() => setIsAudioActive(!isAudioActive)}
+                onClick={() => {
+                  if (localAudioRef.current?.srcObject) {
+                    const stream = localAudioRef.current.srcObject as MediaStream;
+                    const audioTrack = stream.getAudioTracks()[0];
+                    if (audioTrack) {
+                      audioTrack.enabled = !isAudioActive;
+                      setIsAudioActive(!isAudioActive);
+                    }
+                  }
+                }}
                 className={`p-2 rounded-full transition-colors ${
                   isAudioActive 
                     ? 'text-blue-600 hover:bg-blue-50' 
@@ -241,7 +283,7 @@ export const EncryptedChat: React.FC<EncryptedChatProps> = ({
               </button>
 
               <button
-                onClick={endVideoCall}
+                onClick={endVoiceCall}
                 className="p-2 text-red-600 hover:bg-red-50 rounded-full transition-colors"
                 title="End Call"
               >
@@ -259,33 +301,23 @@ export const EncryptedChat: React.FC<EncryptedChatProps> = ({
         </div>
       </div>
 
-      {/* Video Call Area */}
+      {/* Voice Call Area */}
       {isCallActive && (
-        <div className="relative bg-black" style={{ height: '300px' }}>
-          {/* Remote Video */}
-          <video
-            ref={remoteVideoRef}
-            className="w-full h-full object-cover"
-            autoPlay
-            playsInline
-          />
+        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 border-b">
+          <div className="flex items-center justify-center space-x-4">
+            <div className="flex items-center space-x-3">
+              <div className="w-4 h-4 bg-green-500 rounded-full animate-pulse" />
+              <span className="text-sm font-medium text-gray-700">Voice Call Active - Encrypted</span>
+            </div>
+            <div className="flex items-center space-x-2 text-sm text-gray-600">
+              <Mic className={`h-4 w-4 ${isAudioActive ? 'text-green-500' : 'text-red-500'}`} />
+              <span>{isAudioActive ? 'Microphone On' : 'Microphone Off'}</span>
+            </div>
+          </div>
           
-          {/* Local Video (Picture-in-Picture) */}
-          <div className="absolute bottom-4 right-4 w-32 h-24 bg-gray-900 rounded-lg overflow-hidden">
-            <video
-              ref={localVideoRef}
-              className="w-full h-full object-cover"
-              autoPlay
-              playsInline
-              muted
-            />
-          </div>
-
-          {/* Call Status */}
-          <div className="absolute top-4 left-4 flex items-center space-x-2 bg-black bg-opacity-50 px-3 py-2 rounded-lg text-white text-sm">
-            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-            <span>Call Active - Encrypted</span>
-          </div>
+          {/* Hidden audio elements for WebRTC */}
+          <audio ref={localAudioRef} autoPlay muted />
+          <audio ref={remoteAudioRef} autoPlay />
         </div>
       )}
 
@@ -312,7 +344,12 @@ export const EncryptedChat: React.FC<EncryptedChatProps> = ({
                       <Shield className="h-4 w-4 mt-1 flex-shrink-0 text-gray-500" />
                     )}
                     <div className="flex-1">
-                      <p className="text-sm">{message.encryptedContent}</p>
+                      <p className="text-sm">
+                        {message.messageType === 'system' 
+                          ? message.encryptedContent 
+                          : `[Encrypted] ${message.encryptedContent.slice(0, 50)}...`
+                        }
+                      </p>
                       <div className="flex items-center justify-between mt-1">
                         <span className="text-xs opacity-75">
                           {new Date(message.timestamp).toLocaleTimeString()}

@@ -27,10 +27,10 @@ export default function Footer() {
           <div>
             <h3 className="font-semibold mb-4">Platform</h3>
             <ul className="space-y-2 text-neutral-300">
-              <li><a href="#" className="hover:text-white transition-colors">Find Therapists</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Wellness Circles</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">DAO Governance</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">TERAP Token</a></li>
+              <li><a href="/therapist" className="hover:text-white transition-colors">Find Therapists</a></li>
+              <li><a href="/wellness" className="hover:text-white transition-colors">Wellness Circles</a></li>
+              <li><a href="/dao" className="hover:text-white transition-colors">DAO Governance</a></li>
+              <li><a href="/smart-contracts" className="hover:text-white transition-colors">TERAP Token</a></li>
             </ul>
           </div>
 
@@ -38,9 +38,9 @@ export default function Footer() {
           <div>
             <h3 className="font-semibold mb-4">Developers</h3>
             <ul className="space-y-2 text-neutral-300">
-              <li><a href="#" className="hover:text-white transition-colors">Documentation</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Smart Contracts</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">APIs</a></li>
+              <li><a href="/documentation" className="hover:text-white transition-colors">Documentation</a></li>
+              <li><a href="/smart-contracts" className="hover:text-white transition-colors">Smart Contracts</a></li>
+              <li><a href="/apis" className="hover:text-white transition-colors">APIs</a></li>
               <li><a href="#" className="hover:text-white transition-colors">GitHub</a></li>
             </ul>
           </div>
@@ -51,8 +51,8 @@ export default function Footer() {
             <ul className="space-y-2 text-neutral-300">
               <li><a href="#" className="hover:text-white transition-colors">Discord</a></li>
               <li><a href="#" className="hover:text-white transition-colors">Twitter</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Blog</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Newsletter</a></li>
+              <li><a href="/blog" className="hover:text-white transition-colors">Blog</a></li>
+              <li><a href="/newsletter" className="hover:text-white transition-colors">Newsletter</a></li>
             </ul>
           </div>
         </div>

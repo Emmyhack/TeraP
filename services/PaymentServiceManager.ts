@@ -77,9 +77,8 @@ const BLOCKCHAIN_CONFIGS = {
 
 // TeraPCore contract configuration
 const TERAP_CORE_CONFIG = {
-  // Main deployment on ZetaChain
   7000: {
-    address: '0x1234567890123456789012345678901234567890', // Replace with actual address
+    address: '0x00D92e7A9Ea96F7efb28A5e8fD8dA8772bb4dc37',
     abi: [
       'function calculateSessionCost(address therapist, uint256 duration) view returns (uint256)',
       'function bookSession(address therapist, uint256 duration, string encryptedNotes) external',
@@ -89,9 +88,8 @@ const TERAP_CORE_CONFIG = {
       'function processPayment(address user, uint256 amount, bytes calldata data) external',
     ],
   },
-  // Testnet deployment
   7001: {
-    address: '0x9876543210987654321098765432109876543210', // Replace with actual testnet address
+    address: '0x00D92e7A9Ea96F7efb28A5e8fD8dA8772bb4dc37',
     abi: [
       'function calculateSessionCost(address therapist, uint256 duration) view returns (uint256)',
       'function bookSession(address therapist, uint256 duration, string encryptedNotes) external',
@@ -157,15 +155,18 @@ export class PaymentServiceManager {
   private initializeProviders() {
     Object.entries(BLOCKCHAIN_CONFIGS).forEach(([chainIdStr, config]) => {
       const chainId = parseInt(chainIdStr);
+      if (isNaN(chainId) || chainId <= 0) {
+        throw new Error(`Invalid chain ID: ${chainIdStr}`);
+      }
+      
       try {
         const provider = new ethers.JsonRpcProvider(config.rpcUrl);
         this.chainProviders.set(chainId, {
           provider,
           chainId,
         });
-        console.log(`Initialized provider for ${config.name}`);
       } catch (error) {
-        console.error(`Failed to initialize provider for chain ${chainId}:`, error);
+        throw new Error(`Failed to initialize provider for chain ${chainId}: ${error instanceof Error ? error.message : 'Unknown error'}`);
       }
     });
   }
@@ -188,35 +189,42 @@ export class PaymentServiceManager {
 
   async getCurrentTokenPrices(): Promise<Record<string, number>> {
     try {
-      // Use CoinGecko API for real token prices
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000);
+      
       const response = await fetch(
-        'https://api.coingecko.com/api/v3/simple/price?ids=ethereum,binancecoin,matic-network,arbitrum,optimism,base,avalanche-2,zetachain,solana,sui,the-open-network&vs_currencies=usd'
+        'https://api.coingecko.com/api/v3/simple/price?ids=ethereum,binancecoin,matic-network,arbitrum,optimism,base,avalanche-2,zetachain,solana,sui,the-open-network&vs_currencies=usd',
+        { signal: controller.signal }
       );
       
+      clearTimeout(timeoutId);
+      
       if (!response.ok) {
-        throw new Error('Failed to fetch token prices');
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
 
       const prices = await response.json();
       
-      // Map CoinGecko IDs to our token symbols
+      if (!prices || typeof prices !== 'object') {
+        throw new Error('Invalid price data received');
+      }
+      
       const tokenPriceMap = {
-        'ETH': prices.ethereum?.usd || 2500,
-        'BNB': prices.binancecoin?.usd || 600,
-        'MATIC': prices['matic-network']?.usd || 0.80,
-        'ARB': prices.arbitrum?.usd || 1.20,
-        'OP': prices.optimism?.usd || 2.50,
-        'BASE': prices.ethereum?.usd || 2500, // Base uses ETH
-        'AVAX': prices['avalanche-2']?.usd || 35,
-        'ZETA': prices.zetachain?.usd || 0.65,
-        'SOL': prices.solana?.usd || 180,
-        'SUI': prices.sui?.usd || 3.2,
-        'TON': prices['the-open-network']?.usd || 5.8,
-        'SOM': 0.45, // Somnia price (mock for now)
+        'ETH': this.validatePrice(prices.ethereum?.usd, 2500),
+        'BNB': this.validatePrice(prices.binancecoin?.usd, 600),
+        'MATIC': this.validatePrice(prices['matic-network']?.usd, 0.80),
+        'ARB': this.validatePrice(prices.arbitrum?.usd, 1.20),
+        'OP': this.validatePrice(prices.optimism?.usd, 2.50),
+        'BASE': this.validatePrice(prices.ethereum?.usd, 2500),
+        'AVAX': this.validatePrice(prices['avalanche-2']?.usd, 35),
+        'ZETA': this.validatePrice(prices.zetachain?.usd, 0.65),
+        'SOL': this.validatePrice(prices.solana?.usd, 180),
+        'SUI': this.validatePrice(prices.sui?.usd, 3.2),
+        'TON': this.validatePrice(prices['the-open-network']?.usd, 5.8),
+        'SOM': 0.45,
         'USDT': 1.00,
       };
 
-      // Cache the prices
       const timestamp = Date.now();
       Object.entries(tokenPriceMap).forEach(([symbol, price]) => {
         this.priceCache.set(symbol, { price, timestamp });
@@ -224,11 +232,18 @@ export class PaymentServiceManager {
 
       return tokenPriceMap;
     } catch (error) {
-      console.error('Error fetching token prices:', error);
-      
-      // Return cached prices or fallback prices
-      return this.getFallbackPrices();
+      if (error instanceof Error && error.name === 'AbortError') {
+        throw new Error('Price fetch timeout');
+      }
+      throw new Error(`Failed to fetch token prices: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
+  }
+  
+  private validatePrice(price: any, fallback: number): number {
+    if (typeof price === 'number' && price > 0 && isFinite(price)) {
+      return price;
+    }
+    return fallback;
   }
 
   private getFallbackPrices(): Record<string, number> {
@@ -480,25 +495,124 @@ export class PaymentServiceManager {
     chain: any,
     quote: any
   ): Promise<any> {
-    // For now, we'll use mock implementations for non-EVM chains
-    // In production, integrate with specific chain SDKs
+    switch (chain.symbol) {
+      case 'SOL':
+        return await this.processSolanaPayment(request, quote);
+      case 'SUI':
+        return await this.processSuiPayment(request, quote);
+      case 'TON':
+        return await this.processTonPayment(request, quote);
+      default:
+        throw new Error(`Unsupported non-EVM chain: ${chain.symbol}`);
+    }
+  }
+  
+  private async processSolanaPayment(request: PaymentRequest, quote: any): Promise<any> {
+    if (typeof window === 'undefined') throw new Error('Solana only available in browser');
+    const solana = await import('@solana/web3.js').catch(() => null);
+    if (!solana) throw new Error('Solana SDK not available');
+    const { Connection, PublicKey, Transaction, SystemProgram, LAMPORTS_PER_SOL } = solana;
+    const connection = new Connection('https://api.mainnet-beta.solana.com', 'confirmed');
     
-    console.log(`Processing ${chain.name} payment:`, {
-      amount: quote.totalCostUSD,
-      currency: request.currency,
-      chain: chain.symbol
-    });
-
-    // Simulate network delay
-    await new Promise(resolve => setTimeout(resolve, 2000));
-
-    const mockTxHash = `${chain.symbol.toLowerCase()}_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
-
+    if (!window.solana?.isPhantom) {
+      throw new Error('Phantom wallet not found');
+    }
+    
+    await window.solana.connect();
+    const fromPubkey = new PublicKey(window.solana.publicKey.toString());
+    const toPubkey = new PublicKey(request.destinationAddress);
+    const lamports = Math.floor(parseFloat(quote.nativeTokenRequired) * LAMPORTS_PER_SOL);
+    
+    const transaction = new Transaction().add(
+      SystemProgram.transfer({ fromPubkey, toPubkey, lamports })
+    );
+    
+    const { blockhash } = await connection.getLatestBlockhash();
+    transaction.recentBlockhash = blockhash;
+    transaction.feePayer = fromPubkey;
+    
+    const signedTransaction = await window.solana.signTransaction(transaction);
+    const signature = await connection.sendRawTransaction(signedTransaction.serialize());
+    await connection.confirmTransaction(signature);
+    
     return {
-      transactionHash: mockTxHash,
-      gasUsed: chain.gasEstimate,
+      transactionHash: signature,
+      gasUsed: 5000,
       confirmations: 1,
-      blockNumber: Math.floor(Math.random() * 1000000),
+      blockNumber: await connection.getSlot(),
+    };
+  }
+  
+  private async processSuiPayment(request: PaymentRequest, quote: any): Promise<any> {
+    if (typeof window === 'undefined') throw new Error('Sui only available in browser');
+    const suiClient = await import('@mysten/sui.js/client').catch(() => null);
+    const suiTx = await import('@mysten/sui.js/transactions').catch(() => null);
+    if (!suiClient || !suiTx) throw new Error('Sui SDK not available');
+    const { SuiClient, getFullnodeUrl } = suiClient;
+    const { TransactionBlock } = suiTx;
+    
+    if (!window.suiWallet) {
+      throw new Error('Sui wallet not found');
+    }
+    
+    const client = new SuiClient({ url: getFullnodeUrl('mainnet') });
+    await window.suiWallet.connect();
+    
+    const txb = new TransactionBlock();
+    const amount = Math.floor(parseFloat(quote.nativeTokenRequired) * 1000000000);
+    
+    txb.transferObjects(
+      [txb.splitCoins(txb.gas, [txb.pure(amount)])],
+      txb.pure(request.destinationAddress)
+    );
+    
+    const result = await window.suiWallet.signAndExecuteTransactionBlock({
+      transactionBlock: txb,
+      options: { showEffects: true }
+    });
+    
+    return {
+      transactionHash: result.digest,
+      gasUsed: result.effects?.gasUsed?.computationCost || 1000000,
+      confirmations: 1,
+      blockNumber: result.effects?.checkpoint || 0,
+    };
+  }
+  
+  private async processTonPayment(request: PaymentRequest, quote: any): Promise<any> {
+    if (typeof window === 'undefined') throw new Error('TON only available in browser');
+    const tonConnect = await import('@tonconnect/sdk').catch(() => null);
+    const tonCore = await import('@ton/core').catch(() => null);
+    if (!tonConnect || !tonCore) throw new Error('TON SDK not available');
+    const { TonConnect } = tonConnect;
+    const { toNano } = tonCore;
+    
+    if (!window.tonConnectUI) {
+      throw new Error('TON Connect not initialized');
+    }
+    
+    const connector = new TonConnect();
+    await connector.restoreConnection();
+    
+    if (!connector.connected) {
+      throw new Error('TON wallet not connected');
+    }
+    
+    const transaction = {
+      validUntil: Math.floor(Date.now() / 1000) + 300,
+      messages: [{
+        address: request.destinationAddress,
+        amount: toNano(quote.nativeTokenRequired).toString(),
+      }]
+    };
+    
+    const result = await connector.sendTransaction(transaction);
+    
+    return {
+      transactionHash: result.boc,
+      gasUsed: 50000,
+      confirmations: 1,
+      blockNumber: Date.now(),
     };
   }
 
@@ -529,69 +643,100 @@ export class PaymentServiceManager {
     sourceChain: any,
     request: PaymentRequest
   ): Promise<string> {
-    // This would integrate with ZetaChain's omnichain contracts
-    // For now, we'll simulate the cross-chain settlement
-    
-    console.log('Processing cross-chain settlement:', {
-      sourceChain: sourceChain.id,
-      targetChain: 'zetachain-mainnet',
-      amount: request.amount,
-      metadata: request.metadata,
-    });
-
-    // Simulate cross-chain transaction hash
-    const zetaTxHash = `zeta_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
-    
-    // Simulate network delay
-    await new Promise(resolve => setTimeout(resolve, 3000));
-
-    return zetaTxHash;
+    try {
+      const { ZetaChainClient } = await import('@zetachain/toolkit');
+      const zetaClient = new ZetaChainClient({
+        network: 'mainnet',
+        signer: this.chainProviders.get(sourceChain.chainId)?.signer
+      });
+      
+      const paymentData = ethers.AbiCoder.defaultAbiCoder().encode(
+        ['string', 'string', 'string', 'uint256'],
+        [
+          request.metadata.userId,
+          request.metadata.paymentType,
+          sourceTransactionHash,
+          Math.floor(request.amount * 100),
+        ]
+      );
+      
+      // Fallback if ZetaChain unavailable
+      if (!zetaClient) {
+        console.warn('ZetaChain unavailable, using fallback settlement');
+        return `fallback_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
+      }
+      
+      const tx = await zetaClient.call({
+        destination: 'zetachain_mainnet',
+        receiver: TERAP_CORE_CONFIG[7000].address,
+        message: paymentData,
+        gasLimit: 500000,
+      });
+      
+      const receipt = await tx.wait();
+      return receipt.hash;
+    } catch (error) {
+      throw new Error(`Cross-chain settlement failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
   }
 
   private async updateServiceStatus(request: PaymentRequest, txHash: string): Promise<void> {
-    // Update local storage for now (in production, this would be API calls)
-    const paymentRecord = {
-      id: `payment_${Date.now()}`,
-      transactionHash: txHash,
-      userId: request.metadata.userId,
-      amount: request.amount,
-      paymentType: request.metadata.paymentType,
-      subscriptionTierId: request.metadata.subscriptionTierId,
-      timestamp: new Date().toISOString(),
-      status: 'confirmed',
-    };
+    try {
+      const paymentRecord = {
+        id: `payment_${Date.now()}`,
+        transactionHash: txHash,
+        userId: request.metadata.userId,
+        amount: request.amount,
+        paymentType: request.metadata.paymentType,
+        subscriptionTierId: request.metadata.subscriptionTierId,
+        timestamp: new Date().toISOString(),
+        status: 'confirmed',
+      };
 
-    // Store payment record
-    const payments = JSON.parse(localStorage.getItem('terap_payments') || '[]');
-    payments.push(paymentRecord);
-    localStorage.setItem('terap_payments', JSON.stringify(payments));
+      const payments = JSON.parse(localStorage.getItem('terap_payments') || '[]');
+      if (!Array.isArray(payments)) {
+        throw new Error('Invalid payments data in storage');
+      }
+      
+      payments.push(paymentRecord);
+      localStorage.setItem('terap_payments', JSON.stringify(payments));
 
-    // Update subscription status if applicable
-    if (request.metadata.paymentType === 'subscription' && request.metadata.subscriptionTierId) {
-      await this.activateSubscription(request.metadata.userId, request.metadata.subscriptionTierId, txHash);
+      if (request.metadata.paymentType === 'subscription' && request.metadata.subscriptionTierId) {
+        await this.activateSubscription(request.metadata.userId, request.metadata.subscriptionTierId, txHash);
+      }
+    } catch (error) {
+      throw new Error(`Failed to update service status: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
-
-    console.log('Service status updated:', paymentRecord);
   }
 
   private async activateSubscription(userId: string, tierId: string, txHash: string): Promise<void> {
-    const subscriptions = JSON.parse(localStorage.getItem(`subscriptions_${userId}`) || '[]');
-    
-    // Find and activate the pending subscription
-    const updatedSubscriptions = subscriptions.map((sub: any) => {
-      if (sub.tierId === tierId && sub.status === 'pending') {
-        return {
-          ...sub,
-          status: 'active',
-          transactionHash: txHash,
-          activatedAt: new Date().toISOString(),
-        };
+    try {
+      if (!userId || !tierId || !txHash) {
+        throw new Error('Invalid subscription parameters');
       }
-      return sub;
-    });
+      
+      const subscriptions = JSON.parse(localStorage.getItem(`subscriptions_${userId}`) || '[]');
+      
+      if (!Array.isArray(subscriptions)) {
+        throw new Error('Invalid subscription data in storage');
+      }
+      
+      const updatedSubscriptions = subscriptions.map((sub: any) => {
+        if (sub.tierId === tierId && sub.status === 'pending') {
+          return {
+            ...sub,
+            status: 'active',
+            transactionHash: txHash,
+            activatedAt: new Date().toISOString(),
+          };
+        }
+        return sub;
+      });
 
-    localStorage.setItem(`subscriptions_${userId}`, JSON.stringify(updatedSubscriptions));
-    console.log(`Subscription ${tierId} activated for user ${userId}`);
+      localStorage.setItem(`subscriptions_${userId}`, JSON.stringify(updatedSubscriptions));
+    } catch (error) {
+      throw new Error(`Failed to activate subscription: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
   }
 
   async getUserBalances(userAddress: string, chainId: number): Promise<{

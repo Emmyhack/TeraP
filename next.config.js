@@ -14,6 +14,12 @@ const nextConfig = {
       net: false,
       tls: false,
     };
+    config.externals.push({
+      '@zetachain/toolkit': 'commonjs @zetachain/toolkit',
+      '@ton-api/client': 'commonjs @ton-api/client',
+      '@tonconnect/sdk': 'commonjs @tonconnect/sdk',
+      '@ton/core': 'commonjs @ton/core',
+    });
     return config;
   },
 };
