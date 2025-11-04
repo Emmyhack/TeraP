@@ -47,8 +47,8 @@ export const Web3WalletProvider: React.FC<Web3WalletProviderProps> = ({ children
     setWalletState(prev => ({ ...prev, isConnecting: true, error: null }));
 
     try {
-      // Check if MetaMask is installed
-      if (typeof window === 'undefined' || !(window as any).ethereum) {
+      // Check if MetaMask is specifically installed
+      if (typeof window === 'undefined' || !(window as any).ethereum?.isMetaMask) {
         throw new Error('MetaMask is not installed. Please install MetaMask to continue.');
       }
 
@@ -119,7 +119,7 @@ export const Web3WalletProvider: React.FC<Web3WalletProviderProps> = ({ children
   };
 
   const switchChain = async (targetChainId: number): Promise<void> => {
-    if (typeof window === 'undefined' || !(window as any).ethereum) {
+    if (typeof window === 'undefined' || !(window as any).ethereum?.isMetaMask) {
       throw new Error('MetaMask not available');
     }
 
@@ -137,7 +137,7 @@ export const Web3WalletProvider: React.FC<Web3WalletProviderProps> = ({ children
   // Check for existing connection on mount
   useEffect(() => {
     const checkConnection = async () => {
-      if (typeof window === 'undefined' || !(window as any).ethereum) {
+      if (typeof window === 'undefined' || !(window as any).ethereum?.isMetaMask) {
         return;
       }
 
@@ -175,7 +175,7 @@ export const Web3WalletProvider: React.FC<Web3WalletProviderProps> = ({ children
 
   // Listen for account and chain changes
   useEffect(() => {
-    if (typeof window === 'undefined' || !(window as any).ethereum) {
+    if (typeof window === 'undefined' || !(window as any).ethereum?.isMetaMask) {
       return;
     }
 

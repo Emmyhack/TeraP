@@ -1,8 +1,9 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Home, Calendar, Users, Vote, User, MessageCircle, Settings, Menu, X, Wallet, LogOut, Shield } from 'lucide-react';
+import { Home, Calendar, Users, Vote, User, MessageCircle, Settings, Menu, X, Wallet, LogOut, Shield, BookOpen } from 'lucide-react';
 import { useWeb3Wallet } from '@/components/wallet/Web3WalletProvider';
+import MultiWalletConnection from '@/components/wallet/MultiWalletConnection';
 import { useZKIdentity } from '@/components/identity/ZKIdentityProvider';
 
 interface NavigationProps {
@@ -57,6 +58,7 @@ const Navigation: React.FC<NavigationProps> = ({ currentPage, onPageChange }) =>
     }
 
     baseItems.push({ id: 'profile', label: 'Profile', icon: Shield });
+    baseItems.push({ id: 'resources', label: 'Resources', icon: BookOpen });
     
     return baseItems;
   };
@@ -127,13 +129,7 @@ const Navigation: React.FC<NavigationProps> = ({ currentPage, onPageChange }) =>
                 </button>
               </div>
             ) : (
-              <button 
-                onClick={handleConnectWallet}
-                className="flex items-center space-x-2 bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white font-semibold py-2.5 px-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
-              >
-                <Wallet className="h-4 w-4" />
-                <span>Connect Wallet</span>
-              </button>
+              <MultiWalletConnection />
             )}
           </div>
         </div>
@@ -213,13 +209,7 @@ const Navigation: React.FC<NavigationProps> = ({ currentPage, onPageChange }) =>
                     </button>
                   </div>
                 ) : (
-                  <button 
-                    onClick={handleConnectWallet}
-                    className="w-full flex items-center justify-center space-x-2 bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white font-semibold py-3 rounded-xl shadow-lg transition-all duration-200"
-                  >
-                    <Wallet className="h-4 w-4" />
-                    <span>Connect Wallet</span>
-                  </button>
+                  <MultiWalletConnection />
                 )}
               </div>
             </div>

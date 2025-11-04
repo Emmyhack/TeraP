@@ -20,25 +20,21 @@ export default function Hero() {
   };
 
   const handleExplore = () => {
-    if (state.user?.profile) {
-      // User has profile, navigate to their dashboard
-      if (state.user.isTherapist) {
-        router.push('/therapist');
-      } else {
-        router.push('/client');
-      }
-    } else {
-      // User needs to create identity first
-      dispatch({ type: 'SET_CURRENT_PAGE', payload: 'profile' });
-    }
+    // Navigate to book session page
+    window.location.href = '#book-session';
+    setTimeout(() => {
+      const event = new CustomEvent('navigate', { detail: 'book-session' });
+      window.dispatchEvent(event);
+    }, 100);
   };
 
   const handleLearnMore = () => {
-    // Scroll to features section or navigate to about page
-    const featuresElement = document.getElementById('features');
-    if (featuresElement) {
-      featuresElement.scrollIntoView({ behavior: 'smooth' });
-    }
+    // Navigate to resources page
+    window.location.href = '#resources';
+    setTimeout(() => {
+      const event = new CustomEvent('navigate', { detail: 'resources' });
+      window.dispatchEvent(event);
+    }, 100);
   };
 
   return (

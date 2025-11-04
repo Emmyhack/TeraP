@@ -1,9 +1,10 @@
 'use client';
 
-import React, { Suspense, Component, ReactNode } from 'react';
+import React, { Suspense, Component, ReactNode, useState, useEffect } from 'react';
 import { useApp } from '@/stores/AppProvider';
 import MainApp from '@/components/MainApp';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
+import { EnhancedTherapyDashboard } from '@/components/enhanced/EnhancedTherapyDashboard';
 
 interface ErrorBoundaryState {
   hasError: boolean;
@@ -89,6 +90,12 @@ function LoadingFallback() {
 
 export default function HomePage() {
   const { state } = useApp();
+  const [showEnhanced, setShowEnhanced] = useState(false);
+
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    setShowEnhanced(urlParams.get('enhanced') === 'true');
+  }, []);
 
   if (state.ui.isLoading) {
     return <LoadingFallback />;
@@ -99,7 +106,9 @@ export default function HomePage() {
       fallback={(error, reset) => <ErrorFallback error={error} resetErrorBoundary={reset} />}
     >
       <Suspense fallback={<LoadingFallback />}>
-        <MainApp />
+        <div className="relative">
+          <MainApp />
+        </div>
       </Suspense>
     </ErrorBoundary>
   );

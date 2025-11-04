@@ -16,10 +16,21 @@ import SubscriptionManagement from '@/components/subscription/SubscriptionManage
 import NotificationContainer from '@/components/ui/NotificationContainer';
 import ZKIdentityManagement from '@/components/identity/ZKIdentityManagement';
 import { useZKIdentity } from '@/components/identity/ZKIdentityProvider';
+import MentalHealthResources from '@/components/resources/MentalHealthResources';
+import FloatingAIAssistant from '@/components/ai/FloatingAIAssistant';
 
 const MainApp: React.FC = () => {
   const [currentPage, setCurrentPage] = useState('home');
   const { isAuthenticated } = useZKIdentity();
+
+  React.useEffect(() => {
+    const handleNavigate = (event: CustomEvent) => {
+      setCurrentPage(event.detail);
+    };
+    
+    window.addEventListener('navigate', handleNavigate as EventListener);
+    return () => window.removeEventListener('navigate', handleNavigate as EventListener);
+  }, []);
 
   const renderContent = () => {
     // If not authenticated, show identity management
@@ -50,6 +61,8 @@ const MainApp: React.FC = () => {
         return <ZKIdentityManagement />;
       case 'profile':
         return <ZKIdentityManagement />;
+      case 'resources':
+        return <MentalHealthResources />;
       default:
         return (
           <div>
@@ -71,6 +84,7 @@ const MainApp: React.FC = () => {
 
       {currentPage === 'home' && <Footer />}
       <NotificationContainer />
+      <FloatingAIAssistant />
     </div>
   );
 };

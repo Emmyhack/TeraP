@@ -51,7 +51,7 @@ export class CrossChainPaymentService {
   private paymentManager: PaymentServiceManager;
   private readonly isTestnet: boolean;
 
-  constructor(isTestnet: boolean = false) {
+  constructor(isTestnet: boolean = true) {
     this.isTestnet = isTestnet;
     this.paymentManager = paymentServiceManager;
   }
@@ -197,7 +197,7 @@ export class CrossChainPaymentService {
       const solana = await import('@solana/web3.js').catch(() => null);
       if (!solana) throw new Error('Solana SDK not available');
       const { Connection, PublicKey, Transaction, SystemProgram, LAMPORTS_PER_SOL } = solana;
-      const connection = new Connection('https://api.mainnet-beta.solana.com', 'confirmed');
+      const connection = new Connection('https://api.devnet.solana.com', 'confirmed');
       
       if (!window.solana?.isPhantom) {
         throw new Error('Phantom wallet not found');
@@ -205,6 +205,10 @@ export class CrossChainPaymentService {
       
       await window.solana.connect();
       const fromPubkey = new PublicKey(window.solana.publicKey.toString());
+      // Validate destination address is a valid base58 string
+      if (!/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(request.destinationAddress)) {
+        throw new Error('Invalid Solana destination address format');
+      }
       const toPubkey = new PublicKey(request.destinationAddress);
       const lamports = Math.floor(parseFloat(quote.nativeTokenRequired) * LAMPORTS_PER_SOL);
       
@@ -248,7 +252,7 @@ export class CrossChainPaymentService {
         throw new Error('Sui wallet not found');
       }
       
-      const client = new SuiClient({ url: getFullnodeUrl('mainnet') });
+      const client = new SuiClient({ url: getFullnodeUrl('testnet') });
       await window.suiWallet.connect();
       
       const txb = new TransactionBlock();
@@ -359,41 +363,39 @@ export class CrossChainPaymentService {
   ): Promise<any> {
     if (!this.signer) throw new Error('Signer not available');
 
-    const usdtContract = new ethers.Contract(
-      chain.usdtAddress,
-      ERC20_ABI,
-      this.signer
-    );
+    try {
+      const usdtContract = new ethers.Contract(
+        chain.usdtAddress,
+        ERC20_ABI,
+        this.signer
+      );
 
-    // Check USDT balance
-    const userAddress = await this.signer.getAddress();
-    const balance = await usdtContract.balanceOf(userAddress);
-    const decimals = await usdtContract.decimals();
-    const requiredAmount = ethers.parseUnits(quote.usdtRequired, decimals);
+      const userAddress = await this.signer.getAddress();
+      const balance = await usdtContract.balanceOf(userAddress);
+      const decimals = await usdtContract.decimals();
+      const requiredAmount = ethers.parseUnits(quote.usdtRequired, decimals);
 
-    if (balance < requiredAmount) {
-      throw new Error(`Insufficient USDT balance. Required: ${quote.usdtRequired} USDT`);
-    }
-
-    // Transfer USDT to TeraP platform address
-    const transferTx = await usdtContract.transfer(
-      request.destinationAddress,
-      requiredAmount,
-      {
-        gasLimit: chain.gasEstimate,
+      if (balance < requiredAmount) {
+        throw new Error(`Insufficient USDT balance. Required: ${quote.usdtRequired} USDT`);
       }
-    );
 
-    const receipt = await transferTx.wait();
-    
-    if (!receipt) {
-      throw new Error('Transaction receipt not available');
+      const transferTx = await usdtContract.transfer(
+        request.destinationAddress,
+        requiredAmount,
+        { gasLimit: chain.gasEstimate }
+      );
+
+      const receipt = await transferTx.wait();
+      if (!receipt) throw new Error('Transaction receipt not available');
+      
+      return {
+        transactionHash: receipt.hash,
+        gasUsed: receipt.gasUsed,
+      };
+    } catch (error) {
+      console.warn('USDT payment failed, falling back to native token:', error);
+      return await this.processNativeTokenPayment(request, chain, quote);
     }
-    
-    return {
-      transactionHash: receipt.hash,
-      gasUsed: receipt.gasUsed,
-    };
   }
 
   private async processNativeTokenPayment(
@@ -494,92 +496,46 @@ export class CrossChainPaymentService {
       return;
     }
 
-    if (!this.provider) throw new Error('Provider not available');
+    if (typeof window === 'undefined' || !(window as any).ethereum?.isMetaMask) {
+      throw new Error('MetaMask not available');
+    }
+
+    const ethereum = (window as any).ethereum;
+    const hexChainId = `0x${chainId.toString(16)}`;
 
     try {
       // Request to switch network
-      await (this.provider as any).send('wallet_switchEthereumChain', [
-        { chainId: `0x${chainId.toString(16)}` },
-      ]);
+      await ethereum.request({
+        method: 'wallet_switchEthereumChain',
+        params: [{ chainId: hexChainId }],
+      });
     } catch (switchError: any) {
-      // If network is not added, add it
-      if (switchError.code === 4902) {
-        const chain = SUPPORTED_PAYMENT_CHAINS.find(c => c.chainId === chainId);
-        if (chain) {
-          await this.addNetwork(chain);
+      // If network is not added, add it first
+      if (switchError.code === 4902 || switchError.code === 4901) {
+        const networkConfig = this.getNetworkConfig(chainId);
+        if (networkConfig) {
+          try {
+            await ethereum.request({
+              method: 'wallet_addEthereumChain',
+              params: [networkConfig],
+            });
+            // Network added successfully, no need to switch again as it auto-switches
+          } catch (addError: any) {
+            throw new Error(`Failed to add network: ${addError.message}`);
+          }
+        } else {
+          throw new Error(`Network configuration not found for chain ID ${chainId}`);
         }
       } else {
-        throw switchError;
+        throw new Error(`Failed to switch network: ${switchError.message}`);
       }
     }
   }
 
-  private async addNetwork(chain: any): Promise<void> {
-    if (!this.provider) throw new Error('Provider not available');
 
-    const networkConfig = this.getNetworkConfig(chain.chainId);
-    
-    await (this.provider as any).send('wallet_addEthereumChain', [networkConfig]);
-  }
 
   private getNetworkConfig(chainId: number): any {
     const configs: { [key: number]: any } = {
-      1: {
-        chainId: '0x1',
-        chainName: 'Ethereum Mainnet',
-        rpcUrls: ['https://mainnet.infura.io/v3/YOUR_INFURA_KEY'],
-        nativeCurrency: { name: 'Ethereum', symbol: 'ETH', decimals: 18 },
-        blockExplorerUrls: ['https://etherscan.io'],
-      },
-      56: {
-        chainId: '0x38',
-        chainName: 'BNB Smart Chain',
-        rpcUrls: ['https://bsc-dataseed.binance.org/'],
-        nativeCurrency: { name: 'BNB Token', symbol: 'BNB', decimals: 18 },
-        blockExplorerUrls: ['https://bscscan.com'],
-      },
-      137: {
-        chainId: '0x89',
-        chainName: 'Polygon Mainnet',
-        rpcUrls: ['https://polygon-rpc.com/'],
-        nativeCurrency: { name: 'MATIC', symbol: 'MATIC', decimals: 18 },
-        blockExplorerUrls: ['https://polygonscan.com'],
-      },
-      42161: {
-        chainId: '0xa4b1',
-        chainName: 'Arbitrum One',
-        rpcUrls: ['https://arb1.arbitrum.io/rpc'],
-        nativeCurrency: { name: 'Ethereum', symbol: 'ETH', decimals: 18 },
-        blockExplorerUrls: ['https://arbiscan.io'],
-      },
-      10: {
-        chainId: '0xa',
-        chainName: 'Optimism',
-        rpcUrls: ['https://mainnet.optimism.io'],
-        nativeCurrency: { name: 'Ethereum', symbol: 'ETH', decimals: 18 },
-        blockExplorerUrls: ['https://optimistic.etherscan.io'],
-      },
-      8453: {
-        chainId: '0x2105',
-        chainName: 'Base',
-        rpcUrls: ['https://mainnet.base.org'],
-        nativeCurrency: { name: 'Ethereum', symbol: 'ETH', decimals: 18 },
-        blockExplorerUrls: ['https://basescan.org'],
-      },
-      43114: {
-        chainId: '0xa86a',
-        chainName: 'Avalanche C-Chain',
-        rpcUrls: ['https://api.avax.network/ext/bc/C/rpc'],
-        nativeCurrency: { name: 'Avalanche', symbol: 'AVAX', decimals: 18 },
-        blockExplorerUrls: ['https://snowtrace.io'],
-      },
-      7000: {
-        chainId: '0x1b58',
-        chainName: 'ZetaChain Mainnet',
-        rpcUrls: ['https://zetachain-evm.blockpi.network/v1/rpc/public'],
-        nativeCurrency: { name: 'Zeta', symbol: 'ZETA', decimals: 18 },
-        blockExplorerUrls: ['https://zetascan.com'],
-      },
       7001: {
         chainId: '0x1b59',
         chainName: 'ZetaChain Athens Testnet',
@@ -587,12 +543,61 @@ export class CrossChainPaymentService {
         nativeCurrency: { name: 'aZeta', symbol: 'aZETA', decimals: 18 },
         blockExplorerUrls: ['https://zetachain-testnet.blockscout.com'],
       },
-      1001: {
-        chainId: '0x3e9',
-        chainName: 'Somnia Network',
-        rpcUrls: ['https://rpc.somnia.network'],
+      11155111: {
+        chainId: '0xaa36a7',
+        chainName: 'Ethereum Sepolia',
+        rpcUrls: ['https://sepolia.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161'],
+        nativeCurrency: { name: 'Ethereum', symbol: 'ETH', decimals: 18 },
+        blockExplorerUrls: ['https://sepolia.etherscan.io'],
+      },
+      97: {
+        chainId: '0x61',
+        chainName: 'BSC Testnet',
+        rpcUrls: ['https://data-seed-prebsc-1-s1.binance.org:8545/'],
+        nativeCurrency: { name: 'tBNB', symbol: 'tBNB', decimals: 18 },
+        blockExplorerUrls: ['https://testnet.bscscan.com'],
+      },
+      80001: {
+        chainId: '0x13881',
+        chainName: 'Polygon Mumbai',
+        rpcUrls: ['https://rpc-mumbai.maticvigil.com/'],
+        nativeCurrency: { name: 'MATIC', symbol: 'MATIC', decimals: 18 },
+        blockExplorerUrls: ['https://mumbai.polygonscan.com'],
+      },
+      421613: {
+        chainId: '0x66eed',
+        chainName: 'Arbitrum Goerli',
+        rpcUrls: ['https://goerli-rollup.arbitrum.io/rpc'],
+        nativeCurrency: { name: 'Ethereum', symbol: 'ETH', decimals: 18 },
+        blockExplorerUrls: ['https://goerli.arbiscan.io'],
+      },
+      420: {
+        chainId: '0x1a4',
+        chainName: 'Optimism Goerli',
+        rpcUrls: ['https://goerli.optimism.io'],
+        nativeCurrency: { name: 'Ethereum', symbol: 'ETH', decimals: 18 },
+        blockExplorerUrls: ['https://goerli-optimism.etherscan.io'],
+      },
+      84531: {
+        chainId: '0x14a33',
+        chainName: 'Base Goerli',
+        rpcUrls: ['https://goerli.base.org'],
+        nativeCurrency: { name: 'Ethereum', symbol: 'ETH', decimals: 18 },
+        blockExplorerUrls: ['https://goerli.basescan.org'],
+      },
+      43113: {
+        chainId: '0xa869',
+        chainName: 'Avalanche Fuji',
+        rpcUrls: ['https://api.avax-test.network/ext/bc/C/rpc'],
+        nativeCurrency: { name: 'Avalanche', symbol: 'AVAX', decimals: 18 },
+        blockExplorerUrls: ['https://testnet.snowtrace.io'],
+      },
+      1002: {
+        chainId: '0x3ea',
+        chainName: 'Somnia Testnet',
+        rpcUrls: ['https://rpc-testnet.somnia.network'],
         nativeCurrency: { name: 'Somnia', symbol: 'SOM', decimals: 18 },
-        blockExplorerUrls: ['https://explorer.somnia.network'],
+        blockExplorerUrls: ['https://testnet-explorer.somnia.network'],
       },
     };
 
@@ -601,18 +606,17 @@ export class CrossChainPaymentService {
 
   private async getTokenPrices(chainIdOrSymbol: number | string | null): Promise<{ native: number; usdt: number }> {
     try {
-      // Map chainId/symbol to CoinGecko API IDs
+      // Map chainId/symbol to CoinGecko API IDs for testnet
       const coinGeckoIds: { [key: number | string]: string } = {
-        1: 'ethereum', // ETH
-        56: 'binancecoin', // BNB
-        137: 'matic-network', // MATIC
-        42161: 'ethereum', // ETH on Arbitrum
-        10: 'ethereum', // ETH on Optimism
-        8453: 'ethereum', // ETH on Base
-        43114: 'avalanche-2', // AVAX
-        7000: 'zetachain', // ZETA
+        11155111: 'ethereum', // ETH Sepolia
+        97: 'binancecoin', // tBNB
+        80001: 'matic-network', // MATIC Mumbai
+        421613: 'ethereum', // ETH on Arbitrum Goerli
+        420: 'ethereum', // ETH on Optimism Goerli
+        84531: 'ethereum', // ETH on Base Goerli
+        43113: 'avalanche-2', // AVAX Fuji
         7001: 'zetachain', // aZETA testnet
-        1001: 'somnia', // Somnia (if available)
+        1002: 'ethereum', // Somnia testnet (use ETH as proxy)
         'SOL': 'solana',
         'SUI': 'sui',
         'TON': 'the-open-network',
@@ -644,21 +648,20 @@ export class CrossChainPaymentService {
     } catch (error) {
       console.error('Failed to fetch token prices:', error);
       
-      // Fallback to hardcoded prices if API fails
+      // Updated fallback prices (December 2024)
       const fallbackPrices: { [key: number | string]: { native: number; usdt: number } } = {
-        1: { native: 2500, usdt: 1.00 }, // ETH
-        56: { native: 600, usdt: 1.00 }, // BNB
-        137: { native: 0.80, usdt: 1.00 }, // MATIC
-        42161: { native: 2500, usdt: 1.00 }, // ETH on Arbitrum
-        10: { native: 2500, usdt: 1.00 }, // ETH on Optimism
-        8453: { native: 2500, usdt: 1.00 }, // ETH on Base
-        43114: { native: 35, usdt: 1.00 }, // AVAX
-        7000: { native: 0.65, usdt: 1.00 }, // ZETA
-        7001: { native: 0.65, usdt: 1.00 }, // aZETA testnet
-        1001: { native: 0.45, usdt: 1.00 }, // Somnia
-        'SOL': { native: 180, usdt: 1.00 },
-        'SUI': { native: 3.2, usdt: 1.00 },
-        'TON': { native: 5.8, usdt: 1.00 },
+        11155111: { native: 3800, usdt: 1.00 }, // ETH Sepolia
+        97: { native: 720, usdt: 1.00 }, // tBNB
+        80001: { native: 1.05, usdt: 1.00 }, // MATIC Mumbai
+        421613: { native: 3800, usdt: 1.00 }, // ETH on Arbitrum Goerli
+        420: { native: 3800, usdt: 1.00 }, // ETH on Optimism Goerli
+        84531: { native: 3800, usdt: 1.00 }, // ETH on Base Goerli
+        43113: { native: 42, usdt: 1.00 }, // AVAX Fuji
+        7001: { native: 0.68, usdt: 1.00 }, // aZETA testnet
+        1002: { native: 0.35, usdt: 1.00 }, // Somnia testnet
+        'SOL': { native: 220, usdt: 1.00 },
+        'SUI': { native: 4.1, usdt: 1.00 },
+        'TON': { native: 6.2, usdt: 1.00 },
       };
 
       const key = chainIdOrSymbol || 'unknown';
@@ -687,16 +690,21 @@ export class CrossChainPaymentService {
     const nativeBalance = await this.provider.getBalance(userAddress);
     const nativeFormatted = ethers.formatEther(nativeBalance);
 
-    // Get USDT balance
-    const usdtContract = new ethers.Contract(
-      chain.usdtAddress,
-      ERC20_ABI,
-      this.provider
-    );
-    
-    const usdtBalance = await usdtContract.balanceOf(userAddress);
-    const decimals = await usdtContract.decimals();
-    const usdtFormatted = ethers.formatUnits(usdtBalance, decimals);
+    // Get USDT balance with error handling
+    let usdtFormatted = '0.00';
+    try {
+      const usdtContract = new ethers.Contract(
+        chain.usdtAddress,
+        ERC20_ABI,
+        this.provider
+      );
+      
+      const usdtBalance = await usdtContract.balanceOf(userAddress);
+      const decimals = await usdtContract.decimals();
+      usdtFormatted = ethers.formatUnits(usdtBalance, decimals);
+    } catch (error) {
+      console.warn('USDT balance check failed, using 0:', error);
+    }
 
     return {
       native: nativeFormatted,
@@ -717,7 +725,11 @@ export class CrossChainPaymentService {
           const solana = await import('@solana/web3.js').catch(() => null);
           if (!solana) throw new Error('Solana SDK not available');
           const { Connection, PublicKey, LAMPORTS_PER_SOL } = solana;
-          const connection = new Connection('https://api.mainnet-beta.solana.com');
+          const connection = new Connection('https://api.devnet.solana.com');
+          // Validate address is a valid base58 string
+          if (!/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(userAddress)) {
+            throw new Error('Invalid Solana address format');
+          }
           const publicKey = new PublicKey(userAddress);
           const balance = await connection.getBalance(publicKey);
           return {
@@ -732,7 +744,7 @@ export class CrossChainPaymentService {
           const suiClient = await import('@mysten/sui.js/client').catch(() => null);
           if (!suiClient) throw new Error('Sui SDK not available');
           const { SuiClient, getFullnodeUrl } = suiClient;
-          const client = new SuiClient({ url: getFullnodeUrl('mainnet') });
+          const client = new SuiClient({ url: getFullnodeUrl('testnet') });
           const balance = await client.getBalance({ owner: userAddress });
           return {
             native: (Number(balance.totalBalance) / 1000000000).toFixed(6),
@@ -748,7 +760,7 @@ export class CrossChainPaymentService {
           if (!tonApi || !tonCore) throw new Error('TON SDK not available');
           const { TonApiClient } = tonApi;
           const { Address } = tonCore;
-          const client = new TonApiClient({ baseUrl: 'https://tonapi.io' });
+          const client = new TonApiClient({ baseUrl: 'https://testnet.tonapi.io' });
           const address = Address.parse(userAddress);
           const account = await client.accounts.getAccount(address);
           return {
@@ -767,5 +779,5 @@ export class CrossChainPaymentService {
   }
 }
 
-// Singleton instance
-export const crossChainPaymentService = new CrossChainPaymentService();
+// Singleton instance - testnet mode enabled
+export const crossChainPaymentService = new CrossChainPaymentService(true);
