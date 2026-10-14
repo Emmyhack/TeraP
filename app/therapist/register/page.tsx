@@ -138,7 +138,7 @@ export default function TherapistRegisterPage() {
   if (!isConnected) {
     return shell(
       <>
-        <div className="w-16 h-16 bg-gradient-to-br from-primary-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
+        <div className="w-16 h-16 bg-gradient-to-br from-primary-500 to-accent-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
           <Shield className="w-8 h-8 text-white" />
         </div>
         <h1 className="text-3xl font-display font-bold text-neutral-800 mb-4">Wallet Connection Required</h1>
@@ -146,7 +146,7 @@ export default function TherapistRegisterPage() {
         <button
           onClick={connectWallet}
           disabled={isConnecting}
-          className="bg-gradient-to-r from-primary-500 to-purple-600 text-white font-semibold px-8 py-4 rounded-xl hover:from-primary-600 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 flex items-center space-x-2 mx-auto disabled:opacity-50"
+          className="bg-gradient-to-r from-primary-500 to-accent-600 text-white font-semibold px-8 py-4 rounded-xl hover:from-primary-600 hover:to-accent-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 flex items-center space-x-2 mx-auto disabled:opacity-50"
         >
           <span>{isConnecting ? 'Connecting...' : 'Connect Wallet'}</span>
           <Heart className="w-5 h-5" />
@@ -212,7 +212,7 @@ export default function TherapistRegisterPage() {
           </button>
 
           <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-2xl overflow-hidden border border-white/50">
-            <div className="bg-gradient-to-br from-primary-500 via-purple-600 to-accent-500 px-8 py-12 text-center relative overflow-hidden">
+            <div className="bg-gradient-to-br from-primary-500 via-accent-600 to-accent-500 px-8 py-12 text-center relative overflow-hidden">
               <div className="absolute inset-0 opacity-10">
                 <div className="absolute top-4 left-8 w-16 h-16 border border-white/30 rounded-full"></div>
                 <div className="absolute bottom-4 right-8 w-20 h-20 border border-white/20 rounded-full"></div>
@@ -231,12 +231,12 @@ export default function TherapistRegisterPage() {
 
             <form onSubmit={handleSubmit} className="p-8 space-y-6">
               {/* Anonymous Identity */}
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+              <div className="bg-primary-50 border border-primary-200 rounded-lg p-6">
                 <div className="flex items-start">
-                  <Shield className="h-5 w-5 text-blue-400 flex-shrink-0" />
+                  <Shield className="h-5 w-5 text-primary-400 flex-shrink-0" />
                   <div className="ml-3 flex-1">
-                    <h3 className="text-sm font-medium text-blue-800">Privacy Protection</h3>
-                    <p className="mt-2 text-sm text-blue-700">
+                    <h3 className="text-sm font-medium text-primary-800">Privacy Protection</h3>
+                    <p className="mt-2 text-sm text-primary-700">
                       TeraP uses anonymous identities. Your real name is never stored on the blockchain; only the pseudonym below is visible to clients.
                     </p>
                   </div>
@@ -248,7 +248,7 @@ export default function TherapistRegisterPage() {
                     required
                     value={formData.anonymousId}
                     onChange={(e) => setFormData((prev) => ({ ...prev, anonymousId: e.target.value }))}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                     placeholder="e.g., Wellness_Guide_Aurora, MindfulHealer23"
                   />
                   <p className="mt-1 text-sm text-gray-500">Choose a professional pseudonym that clients will see. Cannot be changed later.</p>
@@ -268,7 +268,7 @@ export default function TherapistRegisterPage() {
                   required
                   value={formData.licenseNumber}
                   onChange={(e) => setFormData((prev) => ({ ...prev, licenseNumber: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                   placeholder="LIC123456"
                 />
               </div>
@@ -285,7 +285,7 @@ export default function TherapistRegisterPage() {
                       required
                       value={formData.credentials}
                       onChange={(e) => setFormData((prev) => ({ ...prev, credentials: e.target.value }))}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                       placeholder="Licensed Clinical Social Worker (LCSW)"
                     />
                   </div>
@@ -295,7 +295,7 @@ export default function TherapistRegisterPage() {
                       value={formData.education}
                       onChange={(e) => setFormData((prev) => ({ ...prev, education: e.target.value }))}
                       rows={3}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                       placeholder="Ph.D. in Clinical Psychology"
                     />
                   </div>
@@ -306,7 +306,7 @@ export default function TherapistRegisterPage() {
                       min="0"
                       value={formData.experience}
                       onChange={(e) => setFormData((prev) => ({ ...prev, experience: e.target.value }))}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                       placeholder="5"
                     />
                   </div>
@@ -324,7 +324,7 @@ export default function TherapistRegisterPage() {
                         required={index === 0}
                         value={spec}
                         onChange={(e) => updateSpecialization(index, e.target.value)}
-                        className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                         placeholder="e.g., Anxiety, Depression, PTSD"
                       />
                       {index > 0 && (
@@ -334,7 +334,7 @@ export default function TherapistRegisterPage() {
                       )}
                     </div>
                   ))}
-                  <button type="button" onClick={addSpecialization} className="text-indigo-600 hover:text-indigo-700 font-medium">
+                  <button type="button" onClick={addSpecialization} className="text-primary-600 hover:text-primary-700 font-medium">
                     + Add Specialization
                   </button>
                 </div>
@@ -351,7 +351,7 @@ export default function TherapistRegisterPage() {
                   step="any"
                   value={formData.hourlyRate}
                   onChange={(e) => setFormData((prev) => ({ ...prev, hourlyRate: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                   placeholder="100"
                 />
                 <p className="mt-1 text-sm text-gray-500">Session cost is pro-rated from this rate (e.g. a 30 minute session costs half).</p>
@@ -364,7 +364,7 @@ export default function TherapistRegisterPage() {
                   value={formData.bio}
                   onChange={(e) => setFormData((prev) => ({ ...prev, bio: e.target.value }))}
                   rows={4}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                   placeholder="Tell clients about your approach, experience, and how you can help them..."
                 />
               </div>

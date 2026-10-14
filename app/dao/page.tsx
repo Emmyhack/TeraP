@@ -13,7 +13,7 @@ export default function DAOPage() {
     <AppShell>
       <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div className="flex items-center space-x-4">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-purple-500 to-indigo-600 shadow-lg">
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-accent-500 to-primary-600 shadow-lg">
             <Vote className="h-6 w-6 text-white" />
           </div>
           <div>
@@ -23,7 +23,7 @@ export default function DAOPage() {
         </div>
         <Link
           href="/dao/create-proposal"
-          className="inline-flex items-center space-x-2 rounded-xl bg-gradient-to-r from-purple-500 to-indigo-600 px-5 py-3 font-semibold text-white shadow-lg transition-all hover:from-purple-600 hover:to-indigo-700"
+          className="inline-flex items-center space-x-2 rounded-xl bg-gradient-to-r from-accent-500 to-primary-600 px-5 py-3 font-semibold text-white shadow-lg transition-all hover:from-accent-600 hover:to-primary-700"
         >
           <Plus className="h-4 w-4" />
           <span>Create Proposal</span>

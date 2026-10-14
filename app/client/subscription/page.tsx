@@ -28,7 +28,7 @@ const ClientSubscriptionPage: React.FC = () => {
             </button>
             <div className="h-6 w-px bg-neutral-300" />
             <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-gradient-to-br from-primary-500 to-purple-600 rounded-lg flex items-center justify-center">
+              <div className="w-8 h-8 bg-gradient-to-br from-primary-500 to-accent-600 rounded-lg flex items-center justify-center">
                 <Crown className="w-4 h-4 text-white" />
               </div>
               <h1 className="text-2xl font-display font-bold text-neutral-800">
@@ -42,12 +42,12 @@ const ClientSubscriptionPage: React.FC = () => {
       {/* Hero Section */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="text-center mb-16">
-          <div className="w-16 h-16 bg-gradient-to-br from-primary-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
+          <div className="w-16 h-16 bg-gradient-to-br from-primary-500 to-accent-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
             <Heart className="w-8 h-8 text-white" />
           </div>
           <h2 className="text-5xl font-display font-bold text-neutral-800 mb-6">
             Mental Wellness
-            <span className="block text-3xl bg-gradient-to-r from-primary-500 to-purple-600 bg-clip-text text-transparent mt-2">
+            <span className="block text-3xl bg-gradient-to-r from-primary-500 to-accent-600 bg-clip-text text-transparent mt-2">
               Subscription Plans
             </span>
           </h2>
@@ -70,7 +70,7 @@ const ClientSubscriptionPage: React.FC = () => {
               <div className="text-sm font-medium text-neutral-800">Minutes Roll Into Sessions</div>
             </div>
             <div className="bg-white/80 backdrop-blur-sm rounded-xl p-4 border border-white/50 shadow-lg">
-              <Crown className="w-6 h-6 text-purple-500 mx-auto mb-2" />
+              <Crown className="w-6 h-6 text-accent-500 mx-auto mb-2" />
               <div className="text-sm font-medium text-neutral-800">Pay in TERAP</div>
             </div>
           </div>

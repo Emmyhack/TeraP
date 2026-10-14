@@ -254,7 +254,7 @@ export const EncryptedChat: React.FC<EncryptedChatProps> = ({
           {!isCallActive ? (
             <button
               onClick={startVoiceCall}
-              className="p-2 text-blue-600 hover:bg-blue-50 rounded-full transition-colors"
+              className="p-2 text-primary-600 hover:bg-primary-50 rounded-full transition-colors"
               title="Start Voice Call"
             >
               <Phone className="h-5 w-5" />
@@ -274,7 +274,7 @@ export const EncryptedChat: React.FC<EncryptedChatProps> = ({
                 }}
                 className={`p-2 rounded-full transition-colors ${
                   isAudioActive 
-                    ? 'text-blue-600 hover:bg-blue-50' 
+                    ? 'text-primary-600 hover:bg-primary-50' 
                     : 'text-red-600 hover:bg-red-50 bg-red-50'
                 }`}
                 title={isAudioActive ? 'Mute audio' : 'Unmute audio'}
@@ -303,7 +303,7 @@ export const EncryptedChat: React.FC<EncryptedChatProps> = ({
 
       {/* Voice Call Area */}
       {isCallActive && (
-        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 border-b">
+        <div className="bg-gradient-to-r from-primary-50 to-primary-50 p-6 border-b">
           <div className="flex items-center justify-center space-x-4">
             <div className="flex items-center space-x-3">
               <div className="w-4 h-4 bg-green-500 rounded-full animate-pulse" />
@@ -336,7 +336,7 @@ export const EncryptedChat: React.FC<EncryptedChatProps> = ({
               <div className={`flex ${message.senderId === address ? 'justify-end' : 'justify-start'}`}>
                 <div className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
                   message.senderId === address
-                    ? 'bg-blue-500 text-white'
+                    ? 'bg-primary-500 text-white'
                     : 'bg-gray-200 text-gray-900'
                 }`}>
                   <div className="flex items-start space-x-2">
@@ -381,7 +381,7 @@ export const EncryptedChat: React.FC<EncryptedChatProps> = ({
               onChange={(e) => setCurrentMessage(e.target.value)}
               onKeyPress={handleKeyPress}
               placeholder="Type an encrypted message..."
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 resize-none"
               rows={1}
               style={{ minHeight: '40px', maxHeight: '120px' }}
             />
@@ -395,7 +395,7 @@ export const EncryptedChat: React.FC<EncryptedChatProps> = ({
           <button
             onClick={sendMessage}
             disabled={!currentMessage.trim()}
-            className="p-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+            className="p-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
           >
             <Send className="h-5 w-5" />
           </button>

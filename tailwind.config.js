@@ -1,5 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
+  darkMode: 'class',
   content: [
     './pages/**/*.{js,ts,jsx,tsx,mdx}',
     './components/**/*.{js,ts,jsx,tsx,mdx}',
@@ -10,16 +11,17 @@ module.exports = {
     extend: {
       colors: {
         primary: {
-          50: '#f3f0ff',
-          100: '#e9e5ff',
-          200: '#d4ccff',
-          300: '#b8a6ff',
-          400: '#9775ff',
-          500: '#7c3aff',  // Lavender primary
-          600: '#6d28d9',
-          700: '#5b21b6',
-          800: '#4c1d95',
-          900: '#3c1a78',
+          50: '#ecfdf5',
+          100: '#d1fae5',
+          200: '#a7f3d0',
+          300: '#6ee7b7',
+          400: '#34d399',
+          500: '#10b981',  // Emerald primary
+          600: '#059669',
+          700: '#047857',
+          800: '#065f46',
+          900: '#064e3b',
+          950: '#022c22',
         },
         accent: {
           50: '#f0fdf4',
@@ -27,11 +29,12 @@ module.exports = {
           200: '#bbf7d0',
           300: '#86efac',
           400: '#4ade80',
-          500: '#22c55e',  // Mint accent
+          500: '#22c55e',  // Fresh green accent
           600: '#16a34a',
           700: '#15803d',
           800: '#166534',
           900: '#14532d',
+          950: '#052e16',
         },
         neutral: {
           50: '#fefefe',
@@ -46,11 +49,11 @@ module.exports = {
           900: '#171717',
         },
         wellness: {
-          calm: '#e6e6fa',     // Lavender
-          growth: '#98fb98',    // Pale green  
-          trust: '#f5f5dc',    // Beige/Cream
-          peace: '#b19cd9',    // Light purple
-          hope: '#90ee90',     // Light green
+          calm: '#ecfdf5',     // Mint mist
+          growth: '#bbf7d0',   // Pale green
+          trust: '#f8fafc',    // Off white
+          peace: '#a7f3d0',    // Soft emerald
+          hope: '#86efac',     // Light green
         }
       },
       fontFamily: {

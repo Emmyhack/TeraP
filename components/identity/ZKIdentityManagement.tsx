@@ -184,7 +184,7 @@ const ZKIdentityManagement: React.FC = () => {
           {/* Header */}
           <div className="text-center mb-8">
             <div className="flex items-center justify-center mb-4">
-              <Shield className="h-12 w-12 text-blue-600 mr-3" />
+              <Shield className="h-12 w-12 text-primary-600 mr-3" />
               <h1 className="text-3xl font-bold text-neutral-900">Zero-Knowledge Identity</h1>
             </div>
             <p className="text-neutral-600 max-w-md mx-auto">
@@ -245,7 +245,7 @@ const ZKIdentityManagement: React.FC = () => {
                     onClick={() => setMode('select')}
                     className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                       mode === 'select'
-                        ? 'bg-blue-100 text-blue-700'
+                        ? 'bg-primary-100 text-primary-700'
                         : 'text-neutral-600 hover:text-neutral-900 hover:bg-neutral-50'
                     }`}
                   >
@@ -255,7 +255,7 @@ const ZKIdentityManagement: React.FC = () => {
                     onClick={() => setMode('create')}
                     className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                       mode === 'create'
-                        ? 'bg-blue-100 text-blue-700'
+                        ? 'bg-primary-100 text-primary-700'
                         : 'text-neutral-600 hover:text-neutral-900 hover:bg-neutral-50'
                     }`}
                   >
@@ -289,7 +289,7 @@ const ZKIdentityManagement: React.FC = () => {
                               key={identity.commitment}
                               className={`p-4 border rounded-lg cursor-pointer transition-colors ${
                                 selectedIdentity?.commitment === identity.commitment
-                                  ? 'border-blue-500 bg-blue-50'
+                                  ? 'border-primary-500 bg-primary-50'
                                   : 'border-neutral-200 hover:border-neutral-300 hover:bg-neutral-50'
                               }`}
                               onClick={() => setSelectedIdentity(identity)}
@@ -297,7 +297,7 @@ const ZKIdentityManagement: React.FC = () => {
                               <div className="flex items-center justify-between">
                                 <div className="flex items-center">
                                   {identity.role === 'therapist' ? (
-                                    <Stethoscope className="h-5 w-5 text-blue-600 mr-3" />
+                                    <Stethoscope className="h-5 w-5 text-primary-600 mr-3" />
                                   ) : (
                                     <User className="h-5 w-5 text-green-600 mr-3" />
                                   )}
@@ -363,7 +363,7 @@ const ZKIdentityManagement: React.FC = () => {
                         <div
                           className={`p-4 border-2 rounded-lg cursor-pointer transition-colors ${
                             formData.role === 'client'
-                              ? 'border-blue-500 bg-blue-50'
+                              ? 'border-primary-500 bg-primary-50'
                               : 'border-neutral-200 hover:border-neutral-300'
                           }`}
                           onClick={() => setFormData(prev => ({ ...prev, role: 'client' }))}
@@ -375,12 +375,12 @@ const ZKIdentityManagement: React.FC = () => {
                         <div
                           className={`p-4 border-2 rounded-lg cursor-pointer transition-colors ${
                             formData.role === 'therapist'
-                              ? 'border-blue-500 bg-blue-50'
+                              ? 'border-primary-500 bg-primary-50'
                               : 'border-neutral-200 hover:border-neutral-300'
                           }`}
                           onClick={() => setFormData(prev => ({ ...prev, role: 'therapist' }))}
                         >
-                          <Stethoscope className="h-6 w-6 text-blue-600 mb-2" />
+                          <Stethoscope className="h-6 w-6 text-primary-600 mb-2" />
                           <h3 className="font-medium text-neutral-900">Therapist</h3>
                           <p className="text-sm text-neutral-600">Providing professional support</p>
                         </div>

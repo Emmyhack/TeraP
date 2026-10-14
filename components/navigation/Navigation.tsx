@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation';
 import { Home, Calendar, Users, Vote, User, MessageCircle, CreditCard, Menu, X, LogOut, Shield, BookOpen } from 'lucide-react';
 import { useWeb3Wallet } from '@/components/wallet/Web3WalletProvider';
 import MultiWalletConnection from '@/components/wallet/MultiWalletConnection';
+import ThemeToggle from '@/components/layout/ThemeToggle';
 import { useZKIdentity } from '@/components/identity/ZKIdentityProvider';
 
 interface NavItem {
@@ -45,11 +46,11 @@ const Navigation: React.FC = () => {
 
   const Brand = (
     <Link href="/" className="flex items-center space-x-3">
-      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 shadow-lg">
+      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-primary-500 via-accent-500 to-accent-500 shadow-lg">
         <span className="text-lg font-bold text-white">T</span>
       </div>
       <div className="leading-tight">
-        <span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-xl font-bold text-transparent">TeraP</span>
+        <span className="bg-gradient-to-r from-primary-600 to-accent-600 bg-clip-text text-xl font-bold text-transparent">TeraP</span>
         <div className="text-xs font-medium text-gray-500">Universal</div>
       </div>
     </Link>
@@ -86,7 +87,7 @@ const Navigation: React.FC = () => {
 
   return (
     <header className="sticky top-0 z-50 px-4 pt-4 sm:px-6">
-      <nav className="rounded-2xl border border-gray-200/60 bg-white/95 shadow-lg backdrop-blur-sm">
+      <nav className="rounded-2xl border border-gray-200/60 bg-white/95 shadow-lg backdrop-blur-sm dark:border-gray-700 dark:bg-gray-900/95">
         {/* Desktop */}
         <div className="hidden items-center gap-6 px-4 py-3 lg:flex">
           {Brand}
@@ -97,8 +98,8 @@ const Navigation: React.FC = () => {
                 href={href}
                 className={`flex items-center space-x-2 rounded-xl px-3 py-2 text-sm font-medium transition-colors ${
                   isActive(href)
-                    ? 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-md'
-                    : 'text-gray-600 hover:bg-indigo-50 hover:text-indigo-600'
+                    ? 'bg-gradient-to-r from-primary-500 to-accent-500 text-white shadow-md'
+                    : 'text-gray-600 hover:bg-primary-50 hover:text-primary-600'
                 }`}
               >
                 <Icon className="h-4 w-4" />
@@ -106,13 +107,18 @@ const Navigation: React.FC = () => {
               </Link>
             ))}
           </div>
-          <Account />
+          <div className="flex items-center gap-3">
+            <ThemeToggle />
+            <Account />
+          </div>
         </div>
 
         {/* Mobile / tablet */}
         <div className="lg:hidden">
           <div className="flex items-center justify-between px-4 py-3">
             {Brand}
+            <div className="flex items-center gap-2">
+            <ThemeToggle />
             <button
               onClick={() => setIsMobileMenuOpen((o) => !o)}
               className="rounded-xl p-2.5 hover:bg-gray-100"
@@ -120,6 +126,7 @@ const Navigation: React.FC = () => {
             >
               {isMobileMenuOpen ? <X className="h-5 w-5 text-gray-600" /> : <Menu className="h-5 w-5 text-gray-600" />}
             </button>
+            </div>
           </div>
           {isMobileMenuOpen && (
             <div className="space-y-1 border-t border-gray-200 px-4 py-3">
@@ -130,8 +137,8 @@ const Navigation: React.FC = () => {
                   onClick={() => setIsMobileMenuOpen(false)}
                   className={`flex items-center space-x-3 rounded-xl px-4 py-3 text-left font-medium ${
                     isActive(href)
-                      ? 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-md'
-                      : 'text-gray-600 hover:bg-indigo-50 hover:text-indigo-600'
+                      ? 'bg-gradient-to-r from-primary-500 to-accent-500 text-white shadow-md'
+                      : 'text-gray-600 hover:bg-primary-50 hover:text-primary-600'
                   }`}
                 >
                   <Icon className="h-5 w-5" />

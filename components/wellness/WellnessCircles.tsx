@@ -239,7 +239,7 @@ const WellnessCircles: React.FC = () => {
                               {circle.isActive ? 'Active' : 'Inactive'}
                             </span>
                             {member && <span className="px-2 py-0.5 rounded text-xs font-medium bg-primary-100 text-primary-700">Member</span>}
-                            {facilitator && <span className="px-2 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-700">Facilitator</span>}
+                            {facilitator && <span className="px-2 py-0.5 rounded text-xs font-medium bg-accent-100 text-accent-700">Facilitator</span>}
                           </div>
                         </div>
                         <div className="text-right">

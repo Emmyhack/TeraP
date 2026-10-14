@@ -10,7 +10,7 @@ import { useWeb3Wallet } from '@/components/wallet/Web3WalletProvider';
 import { TeraPContracts } from '@/services/TeraPContracts';
 import { explorerTx } from '@/config/contracts';
 
-const inputCls = 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500';
+const inputCls = 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-accent-500';
 
 export default function CreateWellnessCirclePage() {
   const { addNotification } = useApp();
@@ -75,7 +75,7 @@ export default function CreateWellnessCirclePage() {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="card overflow-hidden p-0">
             {/* Header */}
-            <div className="bg-gradient-to-r from-primary-600 to-purple-600 px-8 py-6">
+            <div className="bg-gradient-to-r from-primary-600 to-accent-600 px-8 py-6">
               <div className="flex items-center justify-between">
                 <div>
                   <h1 className="text-3xl font-bold text-white">Create Wellness Circle</h1>
@@ -144,7 +144,7 @@ export default function CreateWellnessCirclePage() {
                 </div>
               </div>
 
-              <div className="bg-blue-50 rounded-lg p-6 text-sm text-blue-800 space-y-1">
+              <div className="bg-primary-50 rounded-lg p-6 text-sm text-primary-800 space-y-1">
                 <p>The name, description, facilitator address and stake are written to the TeraPCore contract and are public.</p>
                 <p>As facilitator you can deactivate or reactivate the circle, but you cannot leave it.</p>
               </div>

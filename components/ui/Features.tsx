@@ -14,8 +14,8 @@ export default function Features() {
     {
       category: 'Professional Therapy',
       icon: Heart,
-      color: 'from-primary-500 to-purple-600',
-      bgColor: 'from-primary-50 to-purple-50',
+      color: 'from-primary-500 to-accent-600',
+      bgColor: 'from-primary-50 to-accent-50',
       items: [
         {
           title: 'Licensed Therapists',
@@ -66,8 +66,8 @@ export default function Features() {
     {
       category: 'Decentralized Governance',
       icon: Vote,
-      color: 'from-purple-500 to-indigo-600',
-      bgColor: 'from-purple-50 to-indigo-50',
+      color: 'from-accent-500 to-primary-600',
+      bgColor: 'from-accent-50 to-primary-50',
       items: [
         {
           title: 'Democratic Decisions',
@@ -170,7 +170,7 @@ export default function Features() {
 
         {/* Call to Action */}
         <div className="mt-20 text-center">
-          <div className="bg-gradient-to-br from-primary-500 via-purple-600 to-accent-500 rounded-3xl p-10 lg:p-16 text-white shadow-2xl relative overflow-hidden">
+          <div className="bg-gradient-to-br from-primary-500 via-accent-600 to-accent-500 rounded-3xl p-10 lg:p-16 text-white shadow-2xl relative overflow-hidden">
             {/* Background Pattern */}
             <div className="absolute inset-0 opacity-10">
               <div className="absolute top-10 left-10 w-20 h-20 border border-white/30 rounded-full"></div>

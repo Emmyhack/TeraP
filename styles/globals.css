@@ -14,7 +14,7 @@
 
 @layer components {
   .btn-primary {
-    @apply bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white font-semibold px-6 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 active:scale-95;
+    @apply bg-gradient-to-r from-primary-500 to-accent-500 hover:from-primary-600 hover:to-accent-600 text-white font-semibold px-6 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 active:scale-95;
   }
   
   .btn-secondary {
@@ -22,7 +22,7 @@
   }
   
   .btn-outline {
-    @apply border-2 border-indigo-500 text-indigo-600 hover:bg-indigo-500 hover:text-white font-semibold px-6 py-3 rounded-xl transition-all duration-200 transform hover:scale-105 active:scale-95;
+    @apply border-2 border-primary-500 text-primary-600 hover:bg-primary-500 hover:text-white font-semibold px-6 py-3 rounded-xl transition-all duration-200 transform hover:scale-105 active:scale-95;
   }
   
   .btn-success {
@@ -34,11 +34,11 @@
   }
   
   .btn-danger {
-    @apply bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white font-semibold px-6 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 active:scale-95;
+    @apply bg-gradient-to-r from-red-500 to-accent-500 hover:from-red-600 hover:to-accent-600 text-white font-semibold px-6 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 active:scale-95;
   }
   
   .btn-ghost {
-    @apply text-gray-600 hover:text-indigo-600 hover:bg-indigo-50 font-medium px-4 py-2 rounded-lg transition-all duration-200 transform hover:scale-105;
+    @apply text-gray-600 hover:text-primary-600 hover:bg-primary-50 font-medium px-4 py-2 rounded-lg transition-all duration-200 transform hover:scale-105;
   }
   
   .btn-sm {
@@ -75,6 +75,125 @@
     text-wrap: balance;
   }
 }
+
+/* ------------------------------------------------------------------------
+   Dark theme. Theme is toggled by adding `dark` to <html> (see ThemeProvider).
+   Components are written for the light theme; these overrides remap the
+   handful of neutral utilities they use so every page flips consistently.
+   ------------------------------------------------------------------------ */
+.dark body {
+  @apply bg-gray-950 text-gray-100;
+}
+.dark .bg-white,
+.dark .bg-white\/95,
+.dark .bg-white\/90,
+.dark .bg-white\/80,
+.dark .bg-white\/70,
+.dark .bg-white\/60,
+.dark .bg-white\/50 {
+  background-color: rgb(17 24 39 / 0.92);
+}
+.dark .bg-gray-50,
+.dark .bg-gray-100,
+.dark .bg-neutral-50,
+.dark .bg-neutral-100,
+.dark .bg-neutral-200,
+.dark .bg-primary-50,
+.dark .bg-accent-50 {
+  background-color: rgb(31 41 55);
+}
+.dark .bg-primary-100,
+.dark .bg-accent-100 {
+  background-color: rgb(6 78 59 / 0.5);
+}
+.dark .from-white,
+.dark .from-primary-50,
+.dark .from-accent-50,
+.dark .from-neutral-50,
+.dark .from-gray-50 {
+  --tw-gradient-from: rgb(17 24 39) var(--tw-gradient-from-position);
+  --tw-gradient-to: rgb(17 24 39 / 0) var(--tw-gradient-to-position);
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+}
+.dark .via-white,
+.dark .via-primary-50,
+.dark .via-accent-50 {
+  --tw-gradient-to: rgb(3 7 18 / 0) var(--tw-gradient-to-position);
+  --tw-gradient-stops: var(--tw-gradient-from), rgb(3 7 18) var(--tw-gradient-via-position), var(--tw-gradient-to);
+}
+.dark .to-white,
+.dark .to-primary-50,
+.dark .to-accent-50,
+.dark .to-primary-100,
+.dark .to-accent-100 {
+  --tw-gradient-to: rgb(2 44 34) var(--tw-gradient-to-position);
+}
+.dark .text-gray-900,
+.dark .text-gray-800,
+.dark .text-neutral-900,
+.dark .text-neutral-800,
+.dark .text-black {
+  color: rgb(243 244 246);
+}
+.dark .text-gray-700,
+.dark .text-gray-600,
+.dark .text-neutral-700,
+.dark .text-neutral-600 {
+  color: rgb(209 213 219);
+}
+.dark .text-gray-500,
+.dark .text-neutral-500 {
+  color: rgb(156 163 175);
+}
+.dark .text-primary-700,
+.dark .text-primary-800,
+.dark .text-primary-900,
+.dark .text-accent-700,
+.dark .text-accent-800 {
+  color: rgb(110 231 183);
+}
+.dark .border-gray-100,
+.dark .border-gray-200,
+.dark .border-gray-300,
+.dark .border-neutral-200,
+.dark .border-neutral-300,
+.dark .border-white\/50,
+.dark .border-white\/60,
+.dark .border-primary-100,
+.dark .border-primary-200,
+.dark .border-accent-200 {
+  border-color: rgb(55 65 81);
+}
+.dark .border-gray-200\/50,
+.dark .border-gray-200\/60 {
+  border-color: rgb(55 65 81 / 0.8);
+}
+.dark .divide-gray-200 > :not([hidden]) ~ :not([hidden]) {
+  border-color: rgb(55 65 81);
+}
+.dark input,
+.dark select,
+.dark textarea {
+  background-color: rgb(17 24 39);
+  color: rgb(243 244 246);
+  border-color: rgb(75 85 99);
+}
+.dark .shadow-lg,
+.dark .shadow-xl,
+.dark .shadow-2xl {
+  --tw-shadow-color: rgb(0 0 0 / 0.5);
+  --tw-shadow: var(--tw-shadow-colored);
+}
+.dark .hover\:bg-gray-50:hover,
+.dark .hover\:bg-gray-100:hover,
+.dark .hover\:bg-primary-50:hover,
+.dark .hover\:bg-accent-50:hover {
+  background-color: rgb(55 65 81);
+}
+.dark .bg-amber-50 { background-color: rgb(69 26 3 / 0.5); }
+.dark .bg-red-50 { background-color: rgb(69 10 10 / 0.5); }
+.dark .bg-green-50, .dark .bg-emerald-50 { background-color: rgb(2 44 34 / 0.6); }
+.dark .bg-yellow-50 { background-color: rgb(66 32 6 / 0.5); }
 
 /* Custom scrollbar */
 ::-webkit-scrollbar {

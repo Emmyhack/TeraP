@@ -18,12 +18,12 @@ export default function BookSessionPage() {
     <AppShell>
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
           <div className="mb-12">
-            <div className="w-20 h-20 bg-gradient-to-br from-primary-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
+            <div className="w-20 h-20 bg-gradient-to-br from-primary-500 to-accent-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
               <Calendar className="w-10 h-10 text-white" />
             </div>
             <h1 className="text-5xl font-display font-bold text-neutral-800 mb-6">
               Professional Therapy
-              <span className="block text-3xl bg-gradient-to-r from-primary-500 to-purple-600 bg-clip-text text-transparent mt-2">When You Need It</span>
+              <span className="block text-3xl bg-gradient-to-r from-primary-500 to-accent-600 bg-clip-text text-transparent mt-2">When You Need It</span>
             </h1>
             <p className="text-xl text-neutral-600 mb-8 max-w-2xl mx-auto leading-relaxed">
               Connect with licensed mental health professionals through our secure, private platform
@@ -48,7 +48,7 @@ export default function BookSessionPage() {
             </div>
           </div>
 
-          <div className="bg-gradient-to-br from-primary-500 via-purple-600 to-accent-500 rounded-3xl p-8 lg:p-12 text-white shadow-2xl max-w-2xl mx-auto">{cta}</div>
+          <div className="bg-gradient-to-br from-primary-500 via-accent-600 to-accent-500 rounded-3xl p-8 lg:p-12 text-white shadow-2xl max-w-2xl mx-auto">{cta}</div>
         </div>
       </AppShell>
   );
@@ -106,7 +106,7 @@ export default function BookSessionPage() {
             </button>
 
             <div className="flex items-center space-x-4 mb-6">
-              <div className="w-12 h-12 bg-gradient-to-br from-primary-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
+              <div className="w-12 h-12 bg-gradient-to-br from-primary-500 to-accent-600 rounded-2xl flex items-center justify-center shadow-lg">
                 <Calendar className="w-6 h-6 text-white" />
               </div>
               <div>
@@ -115,7 +115,7 @@ export default function BookSessionPage() {
               </div>
             </div>
 
-            <div className="bg-gradient-to-r from-primary-500/10 to-purple-600/10 rounded-2xl p-4 border border-primary-200/50">
+            <div className="bg-gradient-to-r from-primary-500/10 to-accent-600/10 rounded-2xl p-4 border border-primary-200/50">
               <p className="text-neutral-700">
                 Choose a verified therapist, pick a time, and pay with TERAP or your subscription. Payment is escrowed on {chain.name} until the session
                 completes.

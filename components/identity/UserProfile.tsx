@@ -107,12 +107,12 @@ const UserProfile: React.FC = () => {
               <div className="flex items-center space-x-4">
                 <div className="relative">
                   <div className={`w-16 h-16 rounded-full flex items-center justify-center ${
-                    isTherapist ? 'bg-green-100' : 'bg-blue-100'
+                    isTherapist ? 'bg-green-100' : 'bg-primary-100'
                   }`}>
                     {isTherapist ? (
-                      <Stethoscope className={`h-8 w-8 ${isTherapist ? 'text-green-600' : 'text-blue-600'}`} />
+                      <Stethoscope className={`h-8 w-8 ${isTherapist ? 'text-green-600' : 'text-primary-600'}`} />
                     ) : (
-                      <User className="h-8 w-8 text-blue-600" />
+                      <User className="h-8 w-8 text-primary-600" />
                     )}
                   </div>
                   <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
@@ -127,7 +127,7 @@ const UserProfile: React.FC = () => {
                         type="text"
                         value={editData.displayName}
                         onChange={(e) => setEditData(prev => ({ ...prev, displayName: e.target.value }))}
-                        className="text-2xl font-bold text-gray-900 border-b-2 border-blue-300 focus:border-blue-500 outline-none bg-transparent"
+                        className="text-2xl font-bold text-gray-900 border-b-2 border-primary-300 focus:border-primary-500 outline-none bg-transparent"
                         placeholder="Display Name"
                       />
                     ) : (
@@ -136,7 +136,7 @@ const UserProfile: React.FC = () => {
                     <span className={`px-3 py-1 rounded-full text-sm font-medium ${
                       isTherapist 
                         ? 'bg-green-100 text-green-800' 
-                        : 'bg-blue-100 text-blue-800'
+                        : 'bg-primary-100 text-primary-800'
                     }`}>
                       {isTherapist ? 'Therapist' : 'Client'}
                     </span>
@@ -178,7 +178,7 @@ const UserProfile: React.FC = () => {
                   <>
                     <button
                       onClick={() => setIsEditing(true)}
-                      className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                      className="flex items-center space-x-2 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
                     >
                       <Edit3 className="h-4 w-4" />
                       <span>Edit Profile</span>
@@ -212,7 +212,7 @@ const UserProfile: React.FC = () => {
                     <select
                       value={editData.language}
                       onChange={(e) => setEditData(prev => ({ ...prev, language: e.target.value }))}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                     >
                       <option value="en">English</option>
                       <option value="es">Español</option>
@@ -230,7 +230,7 @@ const UserProfile: React.FC = () => {
                     <select
                       value={editData.timezone}
                       onChange={(e) => setEditData(prev => ({ ...prev, timezone: e.target.value }))}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                     >
                       <option value="America/New_York">Eastern Time (ET)</option>
                       <option value="America/Chicago">Central Time (CT)</option>
@@ -252,7 +252,7 @@ const UserProfile: React.FC = () => {
                     <select
                       value={editData.communicationStyle}
                       onChange={(e) => setEditData(prev => ({ ...prev, communicationStyle: e.target.value as any }))}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                     >
                       <option value="formal">Formal</option>
                       <option value="casual">Casual</option>
@@ -283,7 +283,7 @@ const UserProfile: React.FC = () => {
                             type="checkbox"
                             checked={editData.specializations.includes(spec)}
                             onChange={() => toggleSpecialization(spec)}
-                            className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                            className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
                           />
                           <span className="text-sm text-gray-700">{spec}</span>
                         </label>
@@ -296,7 +296,7 @@ const UserProfile: React.FC = () => {
                       profile.specializations.map((spec: string) => (
                         <span
                           key={spec}
-                          className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium"
+                          className="px-3 py-1 bg-primary-100 text-primary-800 rounded-full text-sm font-medium"
                         >
                           {spec}
                         </span>
@@ -341,17 +341,17 @@ const UserProfile: React.FC = () => {
                 <h2 className="text-xl font-semibold text-gray-900 mb-4">Activity Stats</h2>
                 
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="bg-blue-50 rounded-lg p-4 text-center">
-                    <div className="text-2xl font-bold text-blue-600">0</div>
-                    <div className="text-sm text-blue-800">Sessions</div>
+                  <div className="bg-primary-50 rounded-lg p-4 text-center">
+                    <div className="text-2xl font-bold text-primary-600">0</div>
+                    <div className="text-sm text-primary-800">Sessions</div>
                   </div>
                   <div className="bg-green-50 rounded-lg p-4 text-center">
                     <div className="text-2xl font-bold text-green-600">0</div>
                     <div className="text-sm text-green-800">Circles Joined</div>
                   </div>
-                  <div className="bg-purple-50 rounded-lg p-4 text-center">
-                    <div className="text-2xl font-bold text-purple-600">0</div>
-                    <div className="text-sm text-purple-800">TRP Balance</div>
+                  <div className="bg-accent-50 rounded-lg p-4 text-center">
+                    <div className="text-2xl font-bold text-accent-600">0</div>
+                    <div className="text-sm text-accent-800">TRP Balance</div>
                   </div>
                   <div className="bg-yellow-50 rounded-lg p-4 text-center">
                     <div className="text-2xl font-bold text-yellow-600">0</div>
