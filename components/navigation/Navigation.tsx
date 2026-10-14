@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Home, Calendar, Users, Vote, User, MessageCircle, Settings, Menu, X, Wallet, LogOut, Shield, BookOpen } from 'lucide-react';
+import { Home, Calendar, Users, Vote, User, MessageCircle, Settings, Menu, X, LogOut, Shield, BookOpen, Globe } from 'lucide-react';
 import { useWeb3Wallet } from '@/components/wallet/Web3WalletProvider';
 import MultiWalletConnection from '@/components/wallet/MultiWalletConnection';
 import { useZKIdentity } from '@/components/identity/ZKIdentityProvider';
@@ -12,24 +12,12 @@ interface NavigationProps {
 }
 
 const Navigation: React.FC<NavigationProps> = ({ currentPage, onPageChange }) => {
-  const { isConnected, address, connectWallet, disconnectWallet } = useWeb3Wallet();
+  const { isConnected, address, disconnectWallet } = useWeb3Wallet();
   const { currentSession, isAuthenticated, logout } = useZKIdentity();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  
-  const handleConnectWallet = async () => {
-    try {
-      await connectWallet();
-    } catch (error) {
-      console.error('Failed to connect wallet:', error);
-    }
-  };
-  
-  const handleDisconnectWallet = async () => {
-    try {
-      await disconnectWallet();
-    } catch (error) {
-      console.error('Failed to disconnect wallet:', error);
-    }
+
+  const handleDisconnectWallet = () => {
+    disconnectWallet();
   };
   
   const formatAddress = (addr?: string | null) => {
@@ -57,7 +45,9 @@ const Navigation: React.FC<NavigationProps> = ({ currentPage, onPageChange }) =>
       baseItems.push({ id: 'client-dashboard', label: 'My Journey', icon: MessageCircle });
     }
 
+    baseItems.push({ id: 'dao-governance', label: 'DAO', icon: Vote });
     baseItems.push({ id: 'profile', label: 'Profile', icon: Shield });
+    baseItems.push({ id: 'cross-chain', label: 'Cross-chain', icon: Globe });
     baseItems.push({ id: 'resources', label: 'Resources', icon: BookOpen });
     
     return baseItems;

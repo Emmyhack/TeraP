@@ -1,12 +1,14 @@
 {
   "extends": [
-    "next/core-web-vitals"
+    "next/core-web-vitals",
+    "next/typescript"
   ],
   "ignorePatterns": [
     "lib/**/*",
     "node_modules/**/*",
     "cache/**/*",
     "broadcast/**/*",
+    "out/**/*",
     "**/*.js"
   ],
   "rules": {

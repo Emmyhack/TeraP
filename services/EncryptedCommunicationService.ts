@@ -1,4 +1,10 @@
-// Encrypted Communication Service for TeraP Platform
+/**
+ * Browser-side end-to-end encryption for session and circle chat.
+ *
+ * Keys are generated and kept in the browser; messages are encrypted before leaving the client.
+ * Transport is whatever the chat component uses (currently in-memory / local); there is no
+ * server relay in this repository, so two browsers only exchange messages when a relay is added.
+ */
 import { ethers } from 'ethers';
 
 // Types for encrypted communication

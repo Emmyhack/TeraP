@@ -1,25 +1,14 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  swcMinify: true,
-  typescript: {
-    ignoreBuildErrors: true,
-  },
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
   webpack: (config) => {
+    // Node built-ins referenced by some wallet/crypto dependencies; not available in the browser bundle.
     config.resolve.fallback = {
+      ...(config.resolve.fallback ?? {}),
       fs: false,
       net: false,
       tls: false,
     };
-    config.externals.push({
-      '@zetachain/toolkit': 'commonjs @zetachain/toolkit',
-      '@ton-api/client': 'commonjs @ton-api/client',
-      '@tonconnect/sdk': 'commonjs @tonconnect/sdk',
-      '@ton/core': 'commonjs @ton/core',
-    });
     return config;
   },
 };

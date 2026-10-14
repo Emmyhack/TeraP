@@ -1,5 +1,9 @@
-// Zero-Knowledge Mood Tracking Service
-// Enables anonymous mood tracking with data integrity proofs
+/**
+ * Local-only mood tracking.
+ *
+ * Entries are stored in the browser with hash commitments so a user can later prove an entry was
+ * not altered. Nothing is sent to a server or chain. Not a zero-knowledge proof system.
+ */
 
 import { keccak256, toUtf8Bytes } from 'ethers';
 

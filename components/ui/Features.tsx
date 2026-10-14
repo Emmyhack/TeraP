@@ -2,8 +2,14 @@
 
 import React from 'react';
 import { Shield, Users, Vote, Coins, Calendar, Heart, Brain, Globe } from 'lucide-react';
+import { useContractQuery, useTeraP } from '@/hooks/useTeraP';
+import { TeraPContracts } from '@/services/TeraPContracts';
 
 export default function Features() {
+  const { contracts, isConfigured } = useTeraP();
+  const platform = useContractQuery(() => contracts.getPlatformStats(), [contracts], { enabled: isConfigured });
+  const stats = platform.data && !platform.loading ? platform.data : null;
+
   const features = [
     {
       category: 'Professional Therapy',
@@ -15,7 +21,7 @@ export default function Features() {
           title: 'Licensed Therapists',
           description: 'Connect with verified mental health professionals through our DAO-governed verification process',
           icon: Shield,
-          metric: '500+ Verified'
+          metric: stats ? `${stats.verifiedTherapists.toLocaleString()} Verified` : '— Verified'
         },
         {
           title: 'Secure Payments',
@@ -41,7 +47,7 @@ export default function Features() {
           title: 'Support Communities',
           description: 'Join anonymous, token-gated support groups focused on specific mental health topics and goals',
           icon: Users,
-          metric: '50+ Groups'
+          metric: stats ? `${stats.circles.toLocaleString()} Circles` : '— Circles'
         },
         {
           title: 'Empathy Rewards',
@@ -73,13 +79,13 @@ export default function Features() {
           title: 'Wellness Treasury',
           description: 'Community-controlled fund supporting mental health nonprofits and research initiatives',
           icon: Coins,
-          metric: '$2M+ Allocated'
+          metric: stats ? `${TeraPContracts.formatTerap(stats.treasury, 0)} TERAP` : '— TERAP'
         },
         {
           title: 'Research Impact',
           description: 'Contribute to breakthrough mental health research through anonymized data sharing',
           icon: Brain,
-          metric: '10+ Studies'
+          metric: 'Anonymized'
         }
       ]
     },
@@ -105,7 +111,7 @@ export default function Features() {
           title: 'Universal Access',
           description: 'Your mental health journey and credentials seamlessly work across all blockchain networks',
           icon: Globe,
-          metric: '15+ Chains'
+          metric: 'ZetaChain Gateway'
         }
       ]
     }

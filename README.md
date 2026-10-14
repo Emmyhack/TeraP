@@ -1,216 +1,102 @@
 # TeraP Universal
 
-**A decentralized therapy and wellness DAO platform built on ZetaChain for universal cross-chain access to mental health services.**
+A decentralized therapy and wellness platform built as a **ZetaChain universal app**: clients book sessions with DAO-verified therapists, join stake-to-enter wellness circles, govern the platform with the TERAP token, and can pay from any chain connected to ZetaChain.
 
-## Overview
+> Status: contracts complete and tested (71 Foundry tests), frontend wired to the contracts, not yet deployed to a public network. See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) to deploy.
 
-TeraP Universal is a comprehensive blockchain-based platform that democratizes access to mental health services through decentralized governance, cross-chain functionality, and privacy-preserving technologies. The platform enables secure therapy sessions, community wellness circles, and transparent DAO governance across multiple blockchain networks.
+## What's in the box
 
-## Key Features
+| Layer | Tech | Where |
+|---|---|---|
+| Smart contracts | Solidity 0.8, Foundry, OpenZeppelin 5 (UUPS proxies) | `contracts/`, `script/`, `test/` |
+| Frontend | Next.js 14 (app router), TypeScript, Tailwind, ethers v6 | `app/`, `components/`, `hooks/`, `services/` |
+| Integration | One typed service over the contract ABIs | `services/TeraPContracts.ts`, `hooks/useTeraP.ts`, `config/contracts.ts`, `config/abi/` |
 
-### Core Platform
-- **Decentralized Therapy Sessions**: Book and conduct secure therapy sessions with verified therapists
-- **Wellness Circles**: Join community support groups with stake-based participation
-- **DAO Governance**: Democratic decision-making for platform development and policies
-- **Cross-Chain Compatibility**: Access services from any supported blockchain network
-- **Privacy-First Design**: Zero-knowledge proofs and encrypted communications
+### Contracts
 
-### Token Economics
-- **TERAP Token**: Native governance and utility token with staking rewards
-- **Session NFTs**: Proof of completed therapy sessions for insurance and records
-- **Staking Rewards**: Enhanced voting power and yield for token holders
-- **Cross-Chain Payments**: Seamless payments across different blockchain networks
+| Contract | Purpose |
+|---|---|
+| `TeraPToken` | TERAP ERC-20 with vote checkpoints, 100M cap, role-based minting, and 30-day staking (5% APY, staked tokens count 2x in governance). Holders are auto-delegated to themselves. |
+| `TeraPCore` | Universal contract. Therapist registry + DAO verification (soulbound credential NFT), session booking with escrow (TERAP, subscription minutes, or a ZRC-20 from another chain via the gateway), completion / cancellation / late-claim rules, session receipt NFTs, wellness circles, treasury. |
+| `TeraPSubscription` | Prepaid plans (TERAP per 30 days -> session minutes). `TeraPCore` draws minutes and funds from it when a client books with `useSubscription = true`. |
+| `TeraPGovernance` | Proposals with snapshot voting and quorum. Executes against `TeraPCore`: verify/revoke therapists, move treasury funds, change parameters, pause/unpause. |
+| `WellnessGameification` | Operator-attested wellness challenges, achievements, soulbound achievement NFTs, points redeemable for TERAP. |
+| `ZKCredentialVerifier` | Hash-commitment registry for therapist credentials with attester sign-off (no on-chain SNARK verification yet). |
 
-### Supported Networks
-- ZetaChain (Primary)
-- Ethereum
-- Bitcoin
-- Solana
-- Sui
-- TON
-- Somnia
-- BSC, Polygon, Avalanche, Arbitrum, Optimism, Base
+Full semantics, parameters and proposal encodings: [docs/CONTRACTS.md](docs/CONTRACTS.md). Cross-chain booking: [docs/CROSS_CHAIN.md](docs/CROSS_CHAIN.md).
 
-## Architecture
+## Quick start
 
-### Smart Contracts
-- **TeraPToken**: ERC20 governance token with staking and voting capabilities
-- **TeraPCore**: Main platform contract handling sessions, circles, and DAO functions
-- **UniversalContract**: ZetaChain integration for cross-chain messaging
+Prerequisites: Node 18+, [Foundry](https://book.getfoundry.sh/getting-started/installation), git.
 
-### Frontend
-- **Next.js 14**: Modern React framework with TypeScript
-- **Multi-Chain Wallet Support**: MetaMask, Phantom, Sui Wallet, TON Wallet
-- **Responsive Design**: Mobile-first approach with Tailwind CSS
-- **Real-Time Features**: Live session management and notifications
-
-## Deployed Contracts
-
-### ZetaChain Athens Testnet
-- **TeraPToken**: `0x301f106a714cD1b5524D9F9EEa6241fE4BBF14d0`
-- **TeraPCore**: `0x00D92e7A9Ea96F7efb28A5e8fD8dA8772bb4dc37`
-- **Gateway**: `0x3c85E0cA1001f085aC2c95C50DD0a2e5A0C0e5b7`
-- **Chain ID**: 7001
-
-## Quick Start
-
-### Prerequisites
-- Node.js 18+
-- Foundry toolkit
-- Git
-
-### Installation
 ```bash
-git clone https://github.com/Emmyhack/TeraP.git
+git clone --recurse-submodules https://github.com/Emmyhack/TeraP.git
 cd TeraP
 npm install
+forge build && forge test
 ```
 
-### Environment Setup
-```bash
-cp .env.deployed .env.local
-```
-
-### Development
-```bash
-# Start frontend
-npm run dev
-
-# Compile contracts
-npm run compile
-
-# Run tests
-npm run test
-```
-
-### Deployment
-```bash
-# Deploy to testnet
-npm run deploy:testnet
-
-# Deploy to mainnet
-npm run deploy:mainnet
-```
-
-## Smart Contract Development
-
-### Build Contracts
-```bash
-forge build
-```
-
-### Run Tests
-```bash
-forge test
-```
-
-### Deploy Contracts
-```bash
-forge script script/ZetaChainProxyDeploy.s.sol --rpc-url $RPC_URL --broadcast
-```
-
-### Verify Contracts
-```bash
-forge verify-contract <CONTRACT_ADDRESS> <CONTRACT_PATH> --chain-id 7001
-```
-
-## Cross-Chain Operations
-
-### ZetaChain CLI Integration
-```bash
-# Query contract balance
-zetachain query balances --evm <CONTRACT_ADDRESS> --network testnet
-
-# Call from Ethereum
-zetachain evm call --chain-id 11155111 --receiver <CONTRACT_ADDRESS> --types 'string,string,uint256' --values 'therapist,certified,100'
-
-# Monitor transactions
-zetachain query cctx --hash <TRANSACTION_HASH>
-```
-
-## Platform Usage
-
-### For Therapists
-1. Register with credentials and specializations
-2. Set hourly rates in TERAP tokens
-3. Get verified by DAO governance
-4. Accept session bookings
-5. Conduct secure therapy sessions
-
-### For Clients
-1. Connect multi-chain wallet
-2. Purchase TERAP tokens
-3. Book sessions with verified therapists
-4. Join wellness circles
-5. Participate in DAO governance
-
-### For DAO Members
-1. Stake TERAP tokens for voting power
-2. Create and vote on proposals
-3. Verify therapist credentials
-4. Govern platform parameters
-
-## Security Features
-
-- **Upgradeable Contracts**: UUPS proxy pattern for secure upgrades
-- **Access Control**: Role-based permissions and multi-sig governance
-- **Encrypted Communications**: End-to-end encryption for therapy sessions
-- **Zero-Knowledge Proofs**: Privacy-preserving identity verification
-- **Cross-Chain Security**: ZetaChain's validated cross-chain messaging
-
-## Testing
-
-The platform includes comprehensive test coverage:
-- Unit tests for all smart contract functions
-- Integration tests for cross-chain operations
-- Frontend component testing
-- End-to-end user workflow testing
+### Run against a local chain
 
 ```bash
-# Run all tests
-npm test
+# terminal 1
+anvil
 
-# Smart contract tests only
-forge test
+# terminal 2 — deploy with anvil's first account
+PRIVATE_KEY=0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80 \
+  forge script script/Deploy.s.sol --rpc-url http://127.0.0.1:8545 --broadcast
 
-# Frontend tests
-npm run test:frontend
+# copy addresses from deployments/31337.json into .env.local
+cp .env.example .env.local   # then fill NEXT_PUBLIC_* from the JSON, set NEXT_PUBLIC_CHAIN_ID=31337
+npm run dev                  # http://localhost:3000
 ```
 
-## Documentation
+Import the anvil key into MetaMask, add network `http://127.0.0.1:8545` (chain id 31337), and connect. The deployer holds 20M TERAP and is the contract owner, so it can verify therapists and seed tiers.
 
-- [Project Status](PROJECT_STATUS.md)
-- [Deployment Guide](DEPLOYMENT_STATUS.md)
-- [ZetaChain Integration](ZETACHAIN_DEPLOYMENT.md)
-- [Privacy Documentation](PRIVACY_DOCUMENTATION.md)
-- [Payment System](PAYMENT_SYSTEM_DOCUMENTATION.md)
+### Deploy to ZetaChain Athens testnet
 
-## Contributing
+See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md). Short version: fund a key with testnet ZETA, then
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests for new functionality
-5. Submit a pull request
+```bash
+PRIVATE_KEY=0x... npm run deploy:testnet
+```
+
+## Scripts
+
+| Command | What it does |
+|---|---|
+| `npm run dev` / `build` / `start` | Next.js |
+| `npm run typecheck` / `lint` | `tsc --noEmit` / `next lint` |
+| `npm run compile` / `test` | `forge build` / `forge test` |
+| `npm run abi` | Rebuild contracts and refresh `config/abi/*.json` |
+| `npm run deploy:testnet` / `deploy:mainnet` | `forge script script/Deploy.s.sol` against ZetaChain |
+
+## How the pieces fit
+
+1. A therapist registers (`registerTherapist`) with an anonymous id, encrypted credential pointer, hourly rate, a credential hash and an encryption public key.
+2. The DAO verifies them (a `TherapistVerification` proposal, or the owner during bootstrap). They receive a soulbound credential NFT and become bookable.
+3. A client books (`bookSession`), paying with TERAP or subscription minutes. Funds are escrowed in `TeraPCore`.
+4. After the scheduled time the client completes and rates the session; the therapist is paid minus the platform fee (2.5% default) and the client receives a session receipt NFT. If the client never confirms, the therapist can claim after 7 days. Either side can cancel; late client cancellations forfeit 50%.
+5. Fees and donations accumulate in the treasury; TERAP holders stake, propose and vote on how to use them.
+
+## Privacy features (client side)
+
+`services/ZK*.ts`, `services/EncryptedCommunicationService.ts` and `components/identity/*` implement anonymous identities, encrypted session chat and local-only mood/feedback tracking in the browser. They are client-side constructs and are not verified on-chain; see each file's header for what it does and does not guarantee.
+
+## Repository layout
+
+```
+contracts/        Solidity sources (+ UniversalContract.sol gateway interface)
+script/           Deploy.s.sol, Upgrade.s.sol
+test/             Foundry tests (Base.t.sol has the shared fixture)
+deployments/      <chainId>.json written by Deploy.s.sol
+config/abi/       ABIs exported from the build (npm run abi)
+app/              Next.js routes (+ /api read-only endpoints)
+components/       UI
+services/         TeraPContracts.ts + client-side privacy services
+docs/             CONTRACTS.md, DEPLOYMENT.md, CROSS_CHAIN.md
+```
 
 ## License
 
-MIT License - see [LICENSE](LICENSE) file for details.
-
-## Support
-
-- **Discord**: [ZetaChain Community](https://discord.gg/zetachain)
-- **Documentation**: [ZetaChain Docs](https://zetachain.com/docs)
-- **Issues**: [GitHub Issues](https://github.com/Emmyhack/TeraP/issues)
-
-## Acknowledgments
-
-- ZetaChain for cross-chain infrastructure
-- OpenZeppelin for security standards
-- Foundry for development toolkit
-- Next.js for frontend framework
-- Amazon Q Developer for AI-assisted development and code optimization
-
----
-
-**TeraP Universal - Democratizing Mental Health Through Blockchain Technology**
+MIT

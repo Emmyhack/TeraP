@@ -1,6 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { SUPPORTED_CHAINS } from '@/config/contracts';
 
 // Types for Web3 wallet functionality
 interface WalletState {
@@ -48,8 +49,8 @@ export const Web3WalletProvider: React.FC<Web3WalletProviderProps> = ({ children
 
     try {
       // Check if MetaMask is specifically installed
-      if (typeof window === 'undefined' || !(window as any).ethereum?.isMetaMask) {
-        throw new Error('MetaMask is not installed. Please install MetaMask to continue.');
+      if (typeof window === 'undefined' || !(window as any).ethereum) {
+        throw new Error('No EVM wallet detected. Please install MetaMask or another browser wallet.');
       }
 
       const ethereum = (window as any).ethereum;
@@ -119,25 +120,42 @@ export const Web3WalletProvider: React.FC<Web3WalletProviderProps> = ({ children
   };
 
   const switchChain = async (targetChainId: number): Promise<void> => {
-    if (typeof window === 'undefined' || !(window as any).ethereum?.isMetaMask) {
-      throw new Error('MetaMask not available');
+    if (typeof window === 'undefined' || !(window as any).ethereum) {
+      throw new Error('No EVM wallet available');
     }
+    const ethereum = (window as any).ethereum;
+    const hexId = `0x${targetChainId.toString(16)}`;
 
     try {
-      await (window as any).ethereum.request({
-        method: 'wallet_switchEthereumChain',
-        params: [{ chainId: `0x${targetChainId.toString(16)}` }],
-      });
+      await ethereum.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: hexId }] });
     } catch (error: any) {
+      // 4902: chain not added to the wallet yet
+      const code = error?.code ?? error?.data?.originalError?.code;
+      const chain = SUPPORTED_CHAINS[targetChainId];
+      if (code === 4902 && chain) {
+        await ethereum.request({
+          method: 'wallet_addEthereumChain',
+          params: [
+            {
+              chainId: hexId,
+              chainName: chain.name,
+              nativeCurrency: chain.nativeCurrency,
+              rpcUrls: [chain.rpcUrl],
+              blockExplorerUrls: chain.explorerUrl ? [chain.explorerUrl] : [],
+            },
+          ],
+        });
+        return;
+      }
       console.error('Chain switch error:', error);
-      throw new Error('Failed to switch chain');
+      throw new Error(error?.message || 'Failed to switch chain');
     }
   };
 
   // Check for existing connection on mount
   useEffect(() => {
     const checkConnection = async () => {
-      if (typeof window === 'undefined' || !(window as any).ethereum?.isMetaMask) {
+      if (typeof window === 'undefined' || !(window as any).ethereum) {
         return;
       }
 
@@ -175,7 +193,7 @@ export const Web3WalletProvider: React.FC<Web3WalletProviderProps> = ({ children
 
   // Listen for account and chain changes
   useEffect(() => {
-    if (typeof window === 'undefined' || !(window as any).ethereum?.isMetaMask) {
+    if (typeof window === 'undefined' || !(window as any).ethereum) {
       return;
     }
 
