@@ -131,7 +131,7 @@ export const TherapySession: React.FC<TherapySessionProps> = ({ sessionId, onSes
   // ------------------------------------------------------------------ states
 
   const errorScreen = (title: string, message: string) => (
-    <div className="min-h-screen bg-gradient-to-br from-primary-50 to-accent-50 flex items-center justify-center">
+    <div className="min-h-screen bg-primary-50 flex items-center justify-center">
       <div className="text-center p-8 max-w-md">
         <AlertCircle className="h-16 w-16 text-red-500 mx-auto mb-4" />
         <h2 className="text-2xl font-bold text-neutral-800 mb-4">{title}</h2>
@@ -147,7 +147,7 @@ export const TherapySession: React.FC<TherapySessionProps> = ({ sessionId, onSes
 
   if (sessionQuery.loading && !session) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-primary-50 to-accent-50 flex items-center justify-center">
+      <div className="min-h-screen bg-primary-50 flex items-center justify-center">
         <div className="text-center p-8">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto mb-4"></div>
           <h2 className="text-2xl font-bold text-neutral-800 mb-4">Loading Session</h2>
@@ -170,7 +170,7 @@ export const TherapySession: React.FC<TherapySessionProps> = ({ sessionId, onSes
   const counterpart = userRole === 'therapist' ? session.client : session.therapist;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary-50 to-accent-50">
+    <div className="min-h-screen bg-primary-50">
       <div className="max-w-7xl mx-auto p-6">
         {/* Session Header */}
         <div className="bg-white rounded-xl shadow-lg p-6 mb-6">

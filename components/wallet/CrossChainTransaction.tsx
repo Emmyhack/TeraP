@@ -30,7 +30,7 @@ const CCTX_LOOKUP: Record<number, string> = {
   7000: 'https://zetachain.blockpi.network/lcd/v1/public/zeta-chain/crosschain/inboundHashToCctxData',
 };
 
-const inputCls = 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono text-sm';
+const inputCls = 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent font-mono text-sm';
 
 interface Props {
   /** Pre-fill the therapist address (e.g. from the booking screen). */
@@ -109,7 +109,7 @@ export function CrossChainTransaction({ therapist: initialTherapist = '', durati
   return (
     <div className="bg-white rounded-xl shadow-lg p-6">
       <div className="flex items-center gap-3 mb-4">
-        <Send className="w-6 h-6 text-blue-600" />
+        <Send className="w-6 h-6 text-primary-600" />
         <h3 className="text-xl font-semibold text-gray-900">Pay from another chain</h3>
       </div>
       <p className="text-sm text-gray-600 mb-6">
@@ -168,7 +168,7 @@ export function CrossChainTransaction({ therapist: initialTherapist = '', durati
             <button
               onClick={sendDepositAndCall}
               disabled={sending || !encoded.payload || !ADDRESSES.TeraPCore}
-              className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg disabled:opacity-50"
+              className="flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-lg disabled:opacity-50"
             >
               {sending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
               {sending ? 'Confirm in wallet...' : 'depositAndCall'}
@@ -178,7 +178,7 @@ export function CrossChainTransaction({ therapist: initialTherapist = '', durati
               <p className="text-sm text-gray-700 flex items-center gap-2">
                 Submitted: <code className="font-mono">{txHash.slice(0, 12)}...</code>
                 {CCTX_LOOKUP[CHAIN.id] && (
-                  <a href={`${CCTX_LOOKUP[CHAIN.id]}/${txHash}`} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline flex items-center gap-1">
+                  <a href={`${CCTX_LOOKUP[CHAIN.id]}/${txHash}`} target="_blank" rel="noopener noreferrer" className="text-primary-600 hover:underline flex items-center gap-1">
                     track CCTX <ExternalLink className="w-3 h-3" />
                   </a>
                 )}
@@ -205,7 +205,7 @@ function HexRow({ label, value, onCopy, copied, disabled }: { label: string; val
     <div className="bg-gray-50 rounded-lg p-3">
       <div className="flex items-center justify-between mb-1">
         <span className="text-xs font-medium text-gray-600">{label}</span>
-        <button onClick={() => onCopy(label, value)} disabled={disabled} className="text-xs text-blue-600 hover:underline flex items-center gap-1 disabled:opacity-40">
+        <button onClick={() => onCopy(label, value)} disabled={disabled} className="text-xs text-primary-600 hover:underline flex items-center gap-1 disabled:opacity-40">
           {copied === label ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
           {copied === label ? 'Copied' : 'Copy'}
         </button>

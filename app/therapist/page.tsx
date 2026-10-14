@@ -1,10 +1,9 @@
 'use client';
 
+import AppShell from '@/components/layout/AppShell';
 import React from 'react';
 import { useRouter } from 'next/navigation';
 import { Heart, Shield, Users, AlertTriangle, TrendingUp, Calendar, Award, DollarSign, Star } from 'lucide-react';
-import Navigation from '../../components/navigation/Navigation';
-import Footer from '../../components/ui/Footer';
 import TherapistDashboard from '../../components/dashboard/TherapistDashboard';
 import { useWeb3Wallet } from '@/components/wallet/Web3WalletProvider';
 import { useContractQuery, useTeraP } from '@/hooks/useTeraP';
@@ -21,14 +20,6 @@ export default function TherapistPage() {
   const { connectWallet, isConnecting } = useWeb3Wallet();
   const { contracts, address, isConnected, isConfigured, wrongNetwork, ensureNetwork, chain } = useTeraP();
 
-  const handlePageChange = (page: string) => {
-    if (page === 'home') router.push('/');
-    else if (page === 'client-dashboard') router.push('/client');
-    else if (page === 'wellness-circles') router.push('/wellness');
-    else if (page === 'book-session') router.push('/client/book-session');
-    else if (page === 'dao-governance') router.push('/dao');
-    else if (page === 'therapist-dashboard') router.push('/therapist');
-  };
 
   const summary = useContractQuery<TherapistSummary | null>(
     async () => {
@@ -42,16 +33,14 @@ export default function TherapistPage() {
     { enabled: isConfigured && isConnected && Boolean(address) && !wrongNetwork },
   );
 
-  const hero = (title: string, subtitle: string, body: string, cta: React.ReactNode, icon: React.ReactNode, accent = 'from-primary-500 to-purple-600') => (
-    <div className="min-h-screen bg-gradient-to-br from-primary-50 via-purple-50 to-accent-50">
-      <Navigation currentPage="therapist-dashboard" onPageChange={handlePageChange} />
-      <main className="pt-20">
+  const hero = (title: string, subtitle: string, body: string, cta: React.ReactNode, icon: React.ReactNode, accent = 'bg-primary-500') => (
+    <AppShell>
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
           <div className="mb-12">
-            <div className={`w-20 h-20 bg-gradient-to-br ${accent} rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg`}>{icon}</div>
+            <div className={`w-20 h-20 ${accent} rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg`}>{icon}</div>
             <h1 className="text-5xl font-display font-bold text-neutral-800 mb-6">
               {title}
-              <span className={`block text-3xl bg-gradient-to-r ${accent} bg-clip-text text-transparent mt-2`}>{subtitle}</span>
+              <span className={`block text-3xl ${accent} mt-2`}>{subtitle}</span>
             </h1>
             <p className="text-xl text-neutral-600 mb-8 max-w-2xl mx-auto leading-relaxed">{body}</p>
           </div>
@@ -74,11 +63,9 @@ export default function TherapistPage() {
             </div>
           </div>
 
-          <div className="bg-gradient-to-br from-primary-500 via-purple-600 to-accent-500 rounded-3xl p-8 lg:p-12 text-white shadow-2xl max-w-2xl mx-auto">{cta}</div>
+          <div className="bg-primary-500 rounded-3xl p-8 lg:p-12 text-white shadow-2xl max-w-2xl mx-auto">{cta}</div>
         </div>
-      </main>
-      <Footer />
-    </div>
+      </AppShell>
   );
 
   if (!isConfigured) {
@@ -88,7 +75,7 @@ export default function TherapistPage() {
       'The TeraP contract addresses are missing from the environment.',
       <p className="text-lg opacity-95">Set the NEXT_PUBLIC_TERAP_* variables in .env.local (see README) and reload.</p>,
       <AlertTriangle className="w-10 h-10 text-white" />,
-      'from-amber-500 to-orange-500',
+      'bg-amber-500',
     );
   }
 
@@ -125,7 +112,7 @@ export default function TherapistPage() {
         Switch to {chain.name}
       </button>,
       <AlertTriangle className="w-10 h-10 text-white" />,
-      'from-amber-500 to-orange-500',
+      'bg-amber-500',
     );
   }
 
@@ -148,7 +135,7 @@ export default function TherapistPage() {
         Retry
       </button>,
       <AlertTriangle className="w-10 h-10 text-white" />,
-      'from-amber-500 to-orange-500',
+      'bg-amber-500',
     );
   }
 
@@ -179,7 +166,7 @@ export default function TherapistPage() {
         </div>
       </>,
       <AlertTriangle className="w-10 h-10 text-white" />,
-      'from-amber-500 to-orange-500',
+      'bg-amber-500',
     );
   }
 
@@ -190,14 +177,12 @@ export default function TherapistPage() {
   const activeClients = new Set(sessions.filter((s) => s.status === SessionStatus.Booked).map((s) => s.client)).size;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-neutral-50 via-primary-50/30 to-purple-50/30">
-      <Navigation currentPage="therapist-dashboard" onPageChange={handlePageChange} />
-      <main className="pt-20">
+    <AppShell>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Professional Header */}
           <div className="mb-10">
             <div className="flex items-center space-x-4 mb-6">
-              <div className="w-12 h-12 bg-gradient-to-br from-primary-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
+              <div className="w-12 h-12 bg-primary-500 rounded-2xl flex items-center justify-center shadow-lg">
                 <Heart className="w-6 h-6 text-white" />
               </div>
               <div>
@@ -207,16 +192,16 @@ export default function TherapistPage() {
                 </p>
               </div>
             </div>
-            <div className="bg-gradient-to-r from-primary-500/10 to-purple-600/10 rounded-2xl p-4 border border-primary-200/50">
+            <div className="bg-primary-500/10 rounded-2xl p-4 border border-primary-200/50">
               <p className="text-neutral-700">Monitor your sessions, track earnings, and maintain professional excellence on the TeraP platform.</p>
             </div>
           </div>
 
           {/* Quick Stats (live from TeraPCore) */}
           <div className="grid lg:grid-cols-4 gap-6 mb-10">
-            <div className="bg-gradient-to-br from-primary-50 to-purple-50 rounded-2xl p-6 border border-primary-200/50 shadow-lg">
+            <div className="bg-primary-50 rounded-2xl p-6 border border-primary-200/50 shadow-lg">
               <div className="flex items-center space-x-3 mb-4">
-                <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-purple-600 rounded-xl flex items-center justify-center">
+                <div className="w-10 h-10 bg-primary-500 rounded-xl flex items-center justify-center">
                   <Calendar className="w-5 h-5 text-white" />
                 </div>
                 <div>
@@ -227,9 +212,9 @@ export default function TherapistPage() {
               <p className="text-xs text-neutral-600">Completed on-chain</p>
             </div>
 
-            <div className="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-2xl p-6 border border-emerald-200/50 shadow-lg">
+            <div className="bg-emerald-50 rounded-2xl p-6 border border-emerald-200/50 shadow-lg">
               <div className="flex items-center space-x-3 mb-4">
-                <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center">
+                <div className="w-10 h-10 bg-emerald-500 rounded-xl flex items-center justify-center">
                   <Users className="w-5 h-5 text-white" />
                 </div>
                 <div>
@@ -240,9 +225,9 @@ export default function TherapistPage() {
               <p className="text-xs text-neutral-600">With booked sessions</p>
             </div>
 
-            <div className="bg-gradient-to-br from-accent-50 to-orange-50 rounded-2xl p-6 border border-accent-200/50 shadow-lg">
+            <div className="bg-accent-50 rounded-2xl p-6 border border-accent-200/50 shadow-lg">
               <div className="flex items-center space-x-3 mb-4">
-                <div className="w-10 h-10 bg-gradient-to-br from-accent-500 to-orange-500 rounded-xl flex items-center justify-center">
+                <div className="w-10 h-10 bg-accent-500 rounded-xl flex items-center justify-center">
                   <DollarSign className="w-5 h-5 text-white" />
                 </div>
                 <div>
@@ -253,14 +238,14 @@ export default function TherapistPage() {
               <p className="text-xs text-neutral-600">TERAP, net of platform fee</p>
             </div>
 
-            <div className="bg-gradient-to-br from-purple-50 to-indigo-50 rounded-2xl p-6 border border-purple-200/50 shadow-lg">
+            <div className="bg-accent-50 rounded-2xl p-6 border border-accent-200/50 shadow-lg">
               <div className="flex items-center space-x-3 mb-4">
-                <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-xl flex items-center justify-center">
+                <div className="w-10 h-10 bg-accent-500 rounded-xl flex items-center justify-center">
                   <Star className="w-5 h-5 text-white" />
                 </div>
                 <div>
                   <h3 className="font-semibold text-neutral-800">Rating</h3>
-                  <div className="text-2xl font-bold text-purple-600">{profile.ratingCount > 0 ? (profile.rating / 20).toFixed(1) : '—'}</div>
+                  <div className="text-2xl font-bold text-accent-600">{profile.ratingCount > 0 ? (profile.rating / 20).toFixed(1) : '—'}</div>
                 </div>
               </div>
               <p className="text-xs text-neutral-600">{profile.ratingCount} client ratings</p>
@@ -272,8 +257,6 @@ export default function TherapistPage() {
             <TherapistDashboard />
           </div>
         </div>
-      </main>
-      <Footer />
-    </div>
+      </AppShell>
   );
 }

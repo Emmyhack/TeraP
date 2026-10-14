@@ -252,7 +252,7 @@ Develop coping skills, maintain social connections, and practice self-compassion
     switch (type) {
       case 'crisis': return 'bg-red-100 text-red-800';
       case 'emergency': return 'bg-orange-100 text-orange-800';
-      case 'support': return 'bg-blue-100 text-blue-800';
+      case 'support': return 'bg-primary-100 text-primary-800';
       case 'therapy': return 'bg-green-100 text-green-800';
       default: return 'bg-gray-100 text-gray-800';
     }
@@ -277,7 +277,7 @@ Develop coping skills, maintain social connections, and practice self-compassion
             onClick={() => setActiveTab(id as any)}
             className={`flex items-center space-x-2 px-4 py-2 rounded-md font-medium transition-colors ${
               activeTab === id
-                ? 'bg-white text-indigo-600 shadow-sm'
+                ? 'bg-white text-primary-600 shadow-sm'
                 : 'text-gray-600 hover:text-gray-900'
             }`}
           >
@@ -296,7 +296,7 @@ Develop coping skills, maintain social connections, and practice self-compassion
               <div
                 key={guide.id}
                 onClick={() => setSelectedGuide(guide)}
-                className="p-4 border border-gray-200 rounded-lg hover:border-indigo-300 cursor-pointer transition-colors"
+                className="p-4 border border-gray-200 rounded-lg hover:border-primary-300 cursor-pointer transition-colors"
               >
                 <div className="flex justify-between items-start mb-2">
                   <h3 className="font-semibold text-gray-900">{guide.title}</h3>
@@ -305,7 +305,7 @@ Develop coping skills, maintain social connections, and practice self-compassion
                 <p className="text-gray-600 text-sm mb-3">{guide.description}</p>
                 <div className="flex flex-wrap gap-2">
                   {guide.tags.map(tag => (
-                    <span key={tag} className="px-2 py-1 bg-indigo-100 text-indigo-700 text-xs rounded">
+                    <span key={tag} className="px-2 py-1 bg-primary-100 text-primary-700 text-xs rounded">
                       {tag}
                     </span>
                   ))}
@@ -354,13 +354,13 @@ Develop coping skills, maintain social connections, and practice self-compassion
                 </span>
               </div>
               <div className="mb-4">
-                <p className="text-2xl font-bold text-indigo-600 mb-2">{contact.phone}</p>
+                <p className="text-2xl font-bold text-primary-600 mb-2">{contact.phone}</p>
                 <p className="text-gray-600 text-sm mb-2">{contact.description}</p>
                 <p className="text-gray-500 text-sm">Available: {contact.availability}</p>
               </div>
               <button
                 onClick={() => window.open(`tel:${contact.phone.replace(/\D/g, '')}`)}
-                className="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 transition-colors"
+                className="w-full bg-primary-600 text-white py-2 px-4 rounded-md hover:bg-primary-700 transition-colors"
               >
                 Call Now
               </button>
@@ -379,8 +379,8 @@ Develop coping skills, maintain social connections, and practice self-compassion
                 key={tool.id}
                 className={`p-4 border rounded-lg cursor-pointer transition-colors ${
                   activeTool?.id === tool.id
-                    ? 'border-indigo-300 bg-indigo-50'
-                    : 'border-gray-200 hover:border-indigo-300'
+                    ? 'border-primary-300 bg-primary-50'
+                    : 'border-gray-200 hover:border-primary-300'
                 }`}
                 onClick={() => {
                   setActiveTool(tool);
@@ -402,12 +402,12 @@ Develop coping skills, maintain social connections, and practice self-compassion
                 
                 {/* Timer Display */}
                 <div className="text-center mb-6">
-                  <div className="text-4xl font-bold text-indigo-600 mb-2">
+                  <div className="text-4xl font-bold text-primary-600 mb-2">
                     {formatTime(toolTimer)} / {formatTime(activeTool.duration)}
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-2">
                     <div
-                      className="bg-indigo-600 h-2 rounded-full transition-all duration-1000"
+                      className="bg-primary-600 h-2 rounded-full transition-all duration-1000"
                       style={{ width: `${(toolTimer / activeTool.duration) * 100}%` }}
                     />
                   </div>
@@ -449,7 +449,7 @@ Develop coping skills, maintain social connections, and practice self-compassion
                   <ol className="space-y-2">
                     {activeTool.instructions.map((instruction, index) => (
                       <li key={index} className="flex items-start space-x-3">
-                        <span className="flex-shrink-0 w-6 h-6 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center text-sm font-medium">
+                        <span className="flex-shrink-0 w-6 h-6 bg-primary-100 text-primary-600 rounded-full flex items-center justify-center text-sm font-medium">
                           {index + 1}
                         </span>
                         <span className="text-gray-700">{instruction}</span>

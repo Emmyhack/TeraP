@@ -14,8 +14,8 @@ export default function Features() {
     {
       category: 'Professional Therapy',
       icon: Heart,
-      color: 'from-primary-500 to-purple-600',
-      bgColor: 'from-primary-50 to-purple-50',
+      color: 'bg-primary-500',
+      bgColor: 'bg-primary-50',
       items: [
         {
           title: 'Licensed Therapists',
@@ -40,8 +40,8 @@ export default function Features() {
     {
       category: 'Community Wellness',
       icon: Users,
-      color: 'from-accent-500 to-orange-500',
-      bgColor: 'from-accent-50 to-orange-50',
+      color: 'bg-accent-500',
+      bgColor: 'bg-accent-50',
       items: [
         {
           title: 'Support Communities',
@@ -66,8 +66,8 @@ export default function Features() {
     {
       category: 'Decentralized Governance',
       icon: Vote,
-      color: 'from-purple-500 to-indigo-600',
-      bgColor: 'from-purple-50 to-indigo-50',
+      color: 'bg-accent-500',
+      bgColor: 'bg-accent-50',
       items: [
         {
           title: 'Democratic Decisions',
@@ -92,8 +92,8 @@ export default function Features() {
     {
       category: 'Privacy & Data Sovereignty',
       icon: Shield,
-      color: 'from-emerald-500 to-teal-600',
-      bgColor: 'from-emerald-50 to-teal-50',
+      color: 'bg-emerald-500',
+      bgColor: 'bg-emerald-50',
       items: [
         {
           title: 'Complete Data Control',
@@ -132,9 +132,9 @@ export default function Features() {
 
         <div className="space-y-16">
           {features.map((category, categoryIndex) => (
-            <div key={categoryIndex} className={`bg-gradient-to-br ${category.bgColor} border border-white/50 rounded-3xl shadow-xl p-8 lg:p-12 backdrop-blur-sm`}>
+            <div key={categoryIndex} className={`${category.bgColor} border border-white/50 rounded-3xl shadow-xl p-8 lg:p-12 backdrop-blur-sm`}>
               <div className="flex items-center space-x-4 mb-10">
-                <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${category.color} flex items-center justify-center shadow-lg`}>
+                <div className={`w-14 h-14 rounded-2xl ${category.color} flex items-center justify-center shadow-lg`}>
                   <category.icon className="w-7 h-7 text-white" />
                 </div>
                 <h3 className="text-2xl font-display font-bold text-neutral-800">
@@ -170,7 +170,7 @@ export default function Features() {
 
         {/* Call to Action */}
         <div className="mt-20 text-center">
-          <div className="bg-gradient-to-br from-primary-500 via-purple-600 to-accent-500 rounded-3xl p-10 lg:p-16 text-white shadow-2xl relative overflow-hidden">
+          <div className="bg-primary-500 rounded-3xl p-10 lg:p-16 text-white shadow-2xl relative overflow-hidden">
             {/* Background Pattern */}
             <div className="absolute inset-0 opacity-10">
               <div className="absolute top-10 left-10 w-20 h-20 border border-white/30 rounded-full"></div>

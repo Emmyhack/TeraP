@@ -231,7 +231,7 @@ const ZKTherapistProfile: React.FC = () => {
 
   if (!currentSession?.profile) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex items-center justify-center">
+      <div className="flex items-center justify-center py-16">
         <div className="text-center">
           <Shield className="h-16 w-16 text-gray-400 mx-auto mb-4" />
           <h2 className="text-xl font-semibold text-gray-600 mb-2">Authentication Required</h2>
@@ -242,7 +242,7 @@ const ZKTherapistProfile: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+    <div className="w-full">
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-6xl mx-auto">
           
@@ -251,7 +251,7 @@ const ZKTherapistProfile: React.FC = () => {
             <div className="flex items-start justify-between">
               <div className="flex items-center space-x-4">
                 <div className="relative">
-                  <div className="w-20 h-20 bg-gradient-to-br from-green-500 to-teal-600 rounded-full flex items-center justify-center text-white font-bold text-2xl">
+                  <div className="w-20 h-20 bg-green-500 rounded-full flex items-center justify-center text-white font-bold text-2xl">
                     {profileData.basicInfo.displayName.substring(0, 2).toUpperCase() || 'DR'}
                   </div>
                   {verificationStatus === 'verified' && (
@@ -271,7 +271,7 @@ const ZKTherapistProfile: React.FC = () => {
                         Therapist
                       </span>
                       {verificationStatus === 'verified' && (
-                        <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium flex items-center space-x-1">
+                        <span className="px-3 py-1 bg-primary-100 text-primary-800 rounded-full text-sm font-medium flex items-center space-x-1">
                           <Shield className="h-3 w-3" />
                           <span>ZK Verified</span>
                         </span>
@@ -328,7 +328,7 @@ const ZKTherapistProfile: React.FC = () => {
                 ) : (
                   <button
                     onClick={() => setIsEditing(true)}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                    className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
                   >
                     Edit Profile
                   </button>
@@ -356,7 +356,7 @@ const ZKTherapistProfile: React.FC = () => {
                       type="text"
                       value={profileData.basicInfo.displayName}
                       onChange={(e) => updateBasicInfo('displayName', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                       placeholder="Dr. Anonymous"
                     />
                   ) : (
@@ -372,7 +372,7 @@ const ZKTherapistProfile: React.FC = () => {
                     <textarea
                       value={profileData.basicInfo.bio}
                       onChange={(e) => updateBasicInfo('bio', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent h-32"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent h-32"
                       placeholder="Describe your approach and experience..."
                     />
                   ) : (
@@ -388,7 +388,7 @@ const ZKTherapistProfile: React.FC = () => {
                     <select
                       value={profileData.basicInfo.approachStyle}
                       onChange={(e) => updateBasicInfo('approachStyle', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                     >
                       <option value="CBT">Cognitive Behavioral Therapy (CBT)</option>
                       <option value="DBT">Dialectical Behavior Therapy (DBT)</option>
@@ -411,7 +411,7 @@ const ZKTherapistProfile: React.FC = () => {
                       type="number"
                       value={profileData.basicInfo.hourlyRate}
                       onChange={(e) => updateBasicInfo('hourlyRate', parseInt(e.target.value))}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                       min="50"
                       max="500"
                     />
@@ -456,7 +456,7 @@ const ZKTherapistProfile: React.FC = () => {
                         className="hidden"
                         disabled={isUploading}
                       />
-                      <span className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50">
+                      <span className="inline-flex items-center px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors disabled:opacity-50">
                         {isUploading ? (
                           <>
                             <LoadingSpinner size="sm" className="mr-2" />
@@ -480,7 +480,7 @@ const ZKTherapistProfile: React.FC = () => {
                       <span className="text-sm font-medium text-gray-700">Credential Status</span>
                       <button
                         onClick={() => setShowPrivateData(!showPrivateData)}
-                        className="text-blue-600 hover:text-blue-700 text-sm flex items-center"
+                        className="text-primary-600 hover:text-primary-700 text-sm flex items-center"
                       >
                         {showPrivateData ? (
                           <>
@@ -589,13 +589,13 @@ const ZKTherapistProfile: React.FC = () => {
                     {profileData.credentials.specializations.map(spec => (
                       <span
                         key={spec}
-                        className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium flex items-center"
+                        className="px-3 py-1 bg-primary-100 text-primary-800 rounded-full text-sm font-medium flex items-center"
                       >
                         {spec}
                         {isEditing && (
                           <button
                             onClick={() => removeSpecialization(spec)}
-                            className="ml-2 text-blue-600 hover:text-blue-800"
+                            className="ml-2 text-primary-600 hover:text-primary-800"
                           >
                             ×
                           </button>

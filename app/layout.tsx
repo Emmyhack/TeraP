@@ -1,6 +1,7 @@
 import React from 'react';
 import { Metadata } from 'next';
 import { AppProvider } from '@/stores/AppProvider';
+import { ThemeProvider, THEME_INIT_SCRIPT } from '@/components/layout/ThemeProvider';
 import '@/styles/globals.css';
 
 export const metadata: Metadata = {
@@ -18,7 +19,7 @@ export const viewport = {
   width: 'device-width',
   initialScale: 1,
   viewportFit: 'cover',
-  themeColor: '#6366f1',
+  themeColor: '#10b981',
 };
 
 export default function RootLayout({
@@ -27,13 +28,18 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className="scroll-smooth">
-      <body className="font-sans antialiased bg-gray-50 dark:bg-gray-900 min-h-screen">
-        <AppProvider>
-          <div id="root" className="relative">
-            {children}
-          </div>
-        </AppProvider>
+    <html lang="en" className="scroll-smooth" suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
+      </head>
+      <body className="min-h-screen bg-primary-50 font-sans text-neutral-800 antialiased">
+        <ThemeProvider>
+          <AppProvider>
+            <div id="root" className="relative">
+              {children}
+            </div>
+          </AppProvider>
+        </ThemeProvider>
         
         {/* Portal for modals and overlays */}
         <div id="modal-portal" />

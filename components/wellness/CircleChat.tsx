@@ -155,7 +155,7 @@ const CircleChat: React.FC<CircleChatProps> = ({ circle, onBack }) => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary-50 to-accent-50">
+    <div className="w-full">
       {/* Header */}
       <div className="bg-white shadow-sm border-b p-4">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
@@ -210,7 +210,7 @@ const CircleChat: React.FC<CircleChatProps> = ({ circle, onBack }) => {
                     </span>
                   )}
                   {message.messageType === 'system' && (
-                    <span className="px-2 py-1 bg-blue-100 text-blue-600 rounded text-xs font-medium">
+                    <span className="px-2 py-1 bg-primary-100 text-primary-600 rounded text-xs font-medium">
                       System
                     </span>
                   )}

@@ -271,7 +271,7 @@ const ZKClientProfile: React.FC = () => {
 
   if (!currentSession?.profile) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex items-center justify-center">
+      <div className="flex items-center justify-center py-16">
         <div className="text-center">
           <Shield className="h-16 w-16 text-gray-400 mx-auto mb-4" />
           <h2 className="text-xl font-semibold text-gray-600 mb-2">Authentication Required</h2>
@@ -282,7 +282,7 @@ const ZKClientProfile: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+    <div className="w-full">
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-7xl mx-auto">
           
@@ -291,7 +291,7 @@ const ZKClientProfile: React.FC = () => {
             <div className="flex items-start justify-between">
               <div className="flex items-center space-x-4">
                 <div className="relative">
-                  <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-2xl">
+                  <div className="w-20 h-20 bg-primary-500 rounded-full flex items-center justify-center text-white font-bold text-2xl">
                     {profileData.personalInfo.displayName.substring(0, 2).toUpperCase() || 'ME'}
                   </div>
                   <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-green-500 rounded-full flex items-center justify-center border-4 border-white">
@@ -302,7 +302,7 @@ const ZKClientProfile: React.FC = () => {
                 <div>
                   <div className="flex items-center space-x-3 mb-2">
                     <h1 className="text-3xl font-bold text-gray-900">My Wellness Journey</h1>
-                    <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium flex items-center space-x-1">
+                    <span className="px-3 py-1 bg-primary-100 text-primary-800 rounded-full text-sm font-medium flex items-center space-x-1">
                       <Lock className="h-3 w-3" />
                       <span>ZK Protected</span>
                     </span>
@@ -437,7 +437,7 @@ const ZKClientProfile: React.FC = () => {
                         onClick={() => toggleMoodTag(tag)}
                         className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
                           currentMood.tags.includes(tag)
-                            ? 'bg-blue-500 text-white'
+                            ? 'bg-primary-500 text-white'
                             : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                         }`}
                       >
@@ -455,7 +455,7 @@ const ZKClientProfile: React.FC = () => {
                   <textarea
                     value={currentMood.notes}
                     onChange={(e) => setCurrentMood(prev => ({ ...prev, notes: e.target.value }))}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                     rows={3}
                     placeholder="Any additional thoughts or observations..."
                   />
@@ -465,7 +465,7 @@ const ZKClientProfile: React.FC = () => {
                 <button
                   onClick={recordMoodEntry}
                   disabled={isRecordingMood}
-                  className="w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center justify-center"
+                  className="w-full px-6 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors disabled:opacity-50 flex items-center justify-center"
                 >
                   {isRecordingMood ? (
                     <>
@@ -506,11 +506,11 @@ const ZKClientProfile: React.FC = () => {
                 {profileData.analytics ? (
                   <div className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
-                      <div className="bg-blue-50 p-3 rounded-lg text-center">
-                        <div className="text-2xl font-bold text-blue-600">
+                      <div className="bg-primary-50 p-3 rounded-lg text-center">
+                        <div className="text-2xl font-bold text-primary-600">
                           {profileData.analytics.metrics.moodTrend > 0 ? '↗️' : '📈'}
                         </div>
-                        <div className="text-xs text-blue-800">Mood Trend</div>
+                        <div className="text-xs text-primary-800">Mood Trend</div>
                       </div>
                       <div className="bg-green-50 p-3 rounded-lg text-center">
                         <div className="text-2xl font-bold text-green-600">
@@ -540,7 +540,7 @@ const ZKClientProfile: React.FC = () => {
                     <button
                       onClick={generateAnalytics}
                       disabled={isLoadingAnalytics || profileData.moodHistory.length < 3}
-                      className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+                      className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors disabled:opacity-50"
                     >
                       {isLoadingAnalytics ? 'Generating...' : 'Generate Analytics'}
                     </button>
@@ -558,18 +558,18 @@ const ZKClientProfile: React.FC = () => {
                 <div className="space-y-3">
                   <button
                     onClick={() => submitAssessment('PHQ9')}
-                    className="w-full p-3 bg-purple-50 border border-purple-200 rounded-lg hover:bg-purple-100 transition-colors text-left"
+                    className="w-full p-3 bg-accent-50 border border-accent-200 rounded-lg hover:bg-accent-100 transition-colors text-left"
                   >
-                    <div className="font-medium text-purple-800">PHQ-9 Depression Scale</div>
-                    <div className="text-sm text-purple-600">Assess depression symptoms</div>
+                    <div className="font-medium text-accent-800">PHQ-9 Depression Scale</div>
+                    <div className="text-sm text-accent-600">Assess depression symptoms</div>
                   </button>
                   
                   <button
                     onClick={() => submitAssessment('GAD7')}
-                    className="w-full p-3 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 transition-colors text-left"
+                    className="w-full p-3 bg-primary-50 border border-primary-200 rounded-lg hover:bg-primary-100 transition-colors text-left"
                   >
-                    <div className="font-medium text-blue-800">GAD-7 Anxiety Scale</div>
-                    <div className="text-sm text-blue-600">Assess anxiety symptoms</div>
+                    <div className="font-medium text-primary-800">GAD-7 Anxiety Scale</div>
+                    <div className="text-sm text-primary-600">Assess anxiety symptoms</div>
                   </button>
                 </div>
 
@@ -582,7 +582,7 @@ const ZKClientProfile: React.FC = () => {
                         <span className={`px-2 py-1 rounded text-xs ${
                           assessment.severity === 'severe' ? 'bg-red-100 text-red-800' :
                           assessment.severity === 'moderate' ? 'bg-yellow-100 text-yellow-800' :
-                          assessment.severity === 'mild' ? 'bg-blue-100 text-blue-800' :
+                          assessment.severity === 'mild' ? 'bg-primary-100 text-primary-800' :
                           'bg-green-100 text-green-800'
                         }`}>
                           {assessment.severity}
@@ -673,7 +673,7 @@ const ZKClientProfile: React.FC = () => {
                         {new Date(entry.timestamp).toLocaleDateString()}
                       </div>
                       <div className="flex space-x-2 text-xs">
-                        <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded">
+                        <span className="px-2 py-1 bg-primary-100 text-primary-800 rounded">
                           Mood: {entry.moodScore}/10
                         </span>
                         <span className="px-2 py-1 bg-green-100 text-green-800 rounded">
@@ -686,7 +686,7 @@ const ZKClientProfile: React.FC = () => {
                     </div>
                     <div className="flex flex-wrap gap-1">
                       {entry.tags.slice(0, 3).map(tag => (
-                        <span key={tag} className="px-2 py-1 bg-purple-100 text-purple-800 rounded text-xs">
+                        <span key={tag} className="px-2 py-1 bg-accent-100 text-accent-800 rounded text-xs">
                           {tag}
                         </span>
                       ))}

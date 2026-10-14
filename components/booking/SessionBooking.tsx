@@ -234,7 +234,7 @@ const SessionBooking: React.FC<SessionBookingProps> = ({ onNavigateToSubscriptio
           <div key={label} className="flex items-center">
             <div
               className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold ${
-                stepIndex[step] >= i ? 'bg-gradient-to-r from-primary-500 to-purple-600 text-white' : 'bg-neutral-200 text-neutral-500'
+                stepIndex[step] >= i ? 'bg-primary-500 text-white' : 'bg-neutral-200 text-neutral-500'
               }`}
             >
               {stepIndex[step] > i ? <CheckCircle className="h-4 w-4" /> : i + 1}
@@ -308,7 +308,7 @@ const SessionBooking: React.FC<SessionBookingProps> = ({ onNavigateToSubscriptio
               >
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex items-center space-x-3">
-                    <div className="w-12 h-12 bg-gradient-to-br from-primary-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold">
+                    <div className="w-12 h-12 bg-primary-500 rounded-full flex items-center justify-center text-white font-bold">
                       {t.anonymousId.slice(0, 2).toUpperCase()}
                     </div>
                     <div>

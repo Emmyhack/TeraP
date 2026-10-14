@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import AppShell from '@/components/layout/AppShell';
 import { useRouter } from 'next/navigation';
 import { ethers } from 'ethers';
 import { AlertCircle, Loader2 } from 'lucide-react';
@@ -17,7 +18,7 @@ import {
 } from '@/services/TeraPContracts';
 import { ADDRESSES, explorerTx } from '@/config/contracts';
 
-const inputCls = 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500';
+const inputCls = 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500';
 
 const TYPE_OPTIONS: { value: ProposalType; label: string; help: string }[] = [
   { value: ProposalType.TherapistVerification, label: 'Therapist verification', help: 'Verify a registered therapist so they can accept bookings.' },
@@ -136,7 +137,8 @@ export default function CreateProposalPage() {
 
   if (!govConfigured || !isConnected) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <AppShell>
+      <div className="flex items-center justify-center py-16">
         <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8 text-center">
           <h1 className="text-2xl font-bold text-gray-900 mb-4">{!govConfigured ? 'Governance not configured' : 'Connect Wallet Required'}</h1>
           <p className="text-gray-600 mb-6">
@@ -148,20 +150,21 @@ export default function CreateProposalPage() {
           </div>
         </div>
       </div>
+      </AppShell>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <AppShell>
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-          <div className="bg-indigo-600 px-8 py-6">
+          <div className="bg-primary-600 px-8 py-6">
             <div className="flex items-center justify-between">
               <div>
                 <h1 className="text-3xl font-bold text-white">Create New Proposal</h1>
-                <p className="mt-2 text-indigo-100">Submit a proposal for the TeraP DAO community to vote on</p>
+                <p className="mt-2 text-primary-100">Submit a proposal for the TeraP DAO community to vote on</p>
               </div>
-              <button onClick={() => router.back()} className="text-indigo-200 hover:text-white" aria-label="Close">
+              <button onClick={() => router.back()} className="text-primary-200 hover:text-white" aria-label="Close">
                 <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
                 </svg>
@@ -257,9 +260,9 @@ export default function CreateProposalPage() {
               )}
             </div>
 
-            <div className="bg-blue-50 rounded-lg p-6">
-              <h3 className="text-lg font-medium text-blue-900 mb-3">Voting Requirements</h3>
-              <ul className="space-y-2 text-sm text-blue-800">
+            <div className="bg-primary-50 rounded-lg p-6">
+              <h3 className="text-lg font-medium text-primary-900 mb-3">Voting Requirements</h3>
+              <ul className="space-y-2 text-sm text-primary-800">
                 <li>Proposal threshold: {params.data ? `${TeraPContracts.formatTerap(params.data.proposalThreshold)} TERAP voting power` : '—'}</li>
                 <li>Voting period: {params.data ? formatPeriod(params.data.votingPeriod) : '—'} from creation</li>
                 <li>Quorum: {params.data ? `${(params.data.quorumBps / 100).toFixed(1)}% of supply (${TeraPContracts.formatTerap(params.data.quorum, 0)} TERAP)` : '—'}</li>
@@ -282,7 +285,7 @@ export default function CreateProposalPage() {
                 <button
                   type="submit"
                   disabled={isSubmitting || (!canWrite && !wrongNetwork)}
-                  className="bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-400 text-white font-semibold py-3 px-8 rounded-lg transition-colors flex items-center"
+                  className="bg-primary-600 hover:bg-primary-700 disabled:bg-gray-400 text-white font-semibold py-3 px-8 rounded-lg transition-colors flex items-center"
                 >
                   {isSubmitting ? <Loader2 className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" /> : null}
                   {wrongNetwork ? `Switch to ${chain.name}` : isSubmitting ? 'Confirm in wallet...' : 'Create Proposal'}
@@ -295,7 +298,7 @@ export default function CreateProposalPage() {
           </form>
         </div>
       </div>
-    </div>
+    </AppShell>
   );
 }
 

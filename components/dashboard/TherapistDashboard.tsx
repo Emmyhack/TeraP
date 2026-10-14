@@ -263,7 +263,7 @@ const TherapistDashboard: React.FC = () => {
           <div className="flex items-center space-x-4">
             <div
               className={`w-3 h-3 rounded-full ${
-                kind === 'completed' ? 'bg-emerald-500' : kind === 'cancelled' ? 'bg-red-500' : kind === 'inProgress' ? 'bg-amber-500' : 'bg-blue-500'
+                kind === 'completed' ? 'bg-emerald-500' : kind === 'cancelled' ? 'bg-red-500' : kind === 'inProgress' ? 'bg-amber-500' : 'bg-primary-500'
               }`}
             />
             <div>

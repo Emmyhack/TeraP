@@ -36,7 +36,7 @@ const ROUTES = [
 
 export default function APIs() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary-50 to-accent-50">
+    <div className="min-h-screen bg-primary-50">
       <div className="max-w-6xl mx-auto px-4 py-8">
         <Link href="/" className="inline-flex items-center space-x-2 text-primary-600 hover:text-primary-700 mb-8">
           <ArrowLeft className="h-4 w-4" />
@@ -60,7 +60,7 @@ export default function APIs() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <div className="bg-white rounded-xl shadow-lg p-6">
             <div className="flex items-center space-x-3 mb-3">
-              <Globe className="h-7 w-7 text-blue-600" />
+              <Globe className="h-7 w-7 text-primary-600" />
               <h2 className="text-xl font-semibold text-neutral-800">Base URL</h2>
             </div>
             <p className="text-neutral-600 text-sm">
@@ -79,7 +79,7 @@ export default function APIs() {
           </div>
           <div className="bg-white rounded-xl shadow-lg p-6">
             <div className="flex items-center space-x-3 mb-3">
-              <Lock className="h-7 w-7 text-purple-600" />
+              <Lock className="h-7 w-7 text-accent-600" />
               <h2 className="text-xl font-semibold text-neutral-800">Writes</h2>
             </div>
             <p className="text-neutral-600 text-sm">
@@ -95,7 +95,7 @@ export default function APIs() {
             {ROUTES.map((r) => (
               <div key={r.path} className="p-4 bg-neutral-50 rounded-lg">
                 <div className="flex items-center space-x-3 mb-2">
-                  <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs font-medium">{r.method}</span>
+                  <span className="px-2 py-1 bg-primary-100 text-primary-800 rounded text-xs font-medium">{r.method}</span>
                   <code className="text-neutral-800">{r.path}</code>
                 </div>
                 <p className="text-neutral-600 text-sm mb-2">{r.description}</p>
