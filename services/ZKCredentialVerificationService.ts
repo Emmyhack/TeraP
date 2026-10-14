@@ -1,5 +1,10 @@
-// Zero-Knowledge Credential Verification Service
-// Allows therapists to prove professional credentials without revealing personal information
+/**
+ * Client-side credential commitment helper.
+ *
+ * Builds the keccak256 commitment a therapist publishes to ZKCredentialVerifier.sol and keeps the
+ * underlying credential data in the browser. Verification is an off-chain attester decision; this
+ * file does not generate or verify zero-knowledge proofs.
+ */
 
 import { ethers, keccak256, toUtf8Bytes } from 'ethers';
 

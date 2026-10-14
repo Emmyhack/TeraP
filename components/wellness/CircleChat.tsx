@@ -1,9 +1,11 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, Heart, Shield, Users, Settings, ArrowLeft, Lock } from 'lucide-react';
+import { Send, Shield, Users, Settings, ArrowLeft, Lock } from 'lucide-react';
+import { ethers } from 'ethers';
 import { encryptedCommunicationService, EncryptedMessage, ChatSession } from '@/services/EncryptedCommunicationService';
 import { useWeb3Wallet } from '@/components/wallet/Web3WalletProvider';
+import type { WellnessCircle } from '@/services/TeraPContracts';
 
 interface CircleMessage extends EncryptedMessage {
   isAnonymous: boolean;
@@ -12,18 +14,25 @@ interface CircleMessage extends EncryptedMessage {
 }
 
 interface CircleChatProps {
-  circleId: string;
-  circleName: string;
+  /** The on-chain circle this chat belongs to; the chat session is keyed by its circleId. */
+  circle: WellnessCircle;
   onBack: () => void;
 }
 
-const CircleChat: React.FC<CircleChatProps> = ({ circleId, circleName, onBack }) => {
+/** Stable, non-reversible pseudonym for a wallet inside one circle (no randomness, no address leak). */
+function anonymousHandle(address: string, circleId: number): string {
+  const digest = ethers.keccak256(ethers.toUtf8Bytes(`${address.toLowerCase()}:${circleId}`));
+  return `Anonymous_${digest.slice(2, 8)}`;
+}
+
+const CircleChat: React.FC<CircleChatProps> = ({ circle, onBack }) => {
   const { address } = useWeb3Wallet();
+  const circleId = String(circle.circleId);
+  const circleName = circle.name;
   const [messages, setMessages] = useState<CircleMessage[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [isAnonymous, setIsAnonymous] = useState(true);
   const [chatSession, setChatSession] = useState<ChatSession | null>(null);
-  const [onlineMembers, setOnlineMembers] = useState(12);
   const [isConnected, setIsConnected] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -103,9 +112,7 @@ const CircleChat: React.FC<CircleChatProps> = ({ circleId, circleName, onBack })
     if (!newMessage.trim() || !address || !chatSession) return;
 
     try {
-      const senderId = isAnonymous 
-        ? `Anonymous_User_${Math.floor(Math.random() * 1000)}` 
-        : address;
+      const senderId = isAnonymous ? anonymousHandle(address, circle.circleId) : address;
         
       const message = await encryptedCommunicationService.sendMessage(
         chatSession.sessionId,
@@ -160,7 +167,7 @@ const CircleChat: React.FC<CircleChatProps> = ({ circleId, circleName, onBack })
               <h1 className="text-xl font-semibold text-neutral-800">{circleName}</h1>
               <div className="flex items-center space-x-2 text-sm text-neutral-600">
                 <Users className="h-4 w-4" />
-                <span>12 members online</span>
+                <span>{circle.memberCount} members · circle #{circle.circleId}</span>
               </div>
             </div>
           </div>
@@ -286,7 +293,7 @@ const CircleChat: React.FC<CircleChatProps> = ({ circleId, circleName, onBack })
               <span>End-to-end encrypted • Anonymous mode: {isAnonymous ? 'ON' : 'OFF'}</span>
             </div>
             <div className="flex items-center space-x-1">
-              <span>Circle ID: {circleId.slice(0, 8)}...</span>
+              <span>Circle #{circleId}</span>
             </div>
           </div>
         </div>

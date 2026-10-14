@@ -1,45 +1,16 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import { useRouter } from 'next/navigation';
 import { SubscriptionPlanSelector } from '@/components/subscription/SubscriptionPlans';
-import { SubscriptionTier, CrossChainPayment } from '@/types/subscription';
-import { useApp } from '@/stores/AppProvider';
+import { useSubscription } from '@/hooks/useSubscription';
+import { TeraPContracts } from '@/services/TeraPContracts';
 import { ArrowLeft, Crown, Heart, Shield, Star } from 'lucide-react';
 
 const ClientSubscriptionPage: React.FC = () => {
   const router = useRouter();
-  const { addNotification } = useApp();
-  const [isLoading, setIsLoading] = useState(false);
-
-  const handleSubscribe = async (tier: SubscriptionTier, payment: CrossChainPayment) => {
-    setIsLoading(true);
-    try {
-      // Handle subscription logic here
-      console.log('Subscribing to:', tier.name, 'with payment:', payment);
-      
-      addNotification({
-        type: 'success',
-        title: 'Subscription Successful',
-        message: `Successfully subscribed to ${tier.name}! Your access will be active shortly.`
-      });
-
-      // Redirect back to booking after successful subscription
-      setTimeout(() => {
-        router.push('/client/book-session');
-      }, 2000);
-      
-    } catch (error) {
-      console.error('Subscription failed:', error);
-      addNotification({
-        type: 'error',
-        title: 'Subscription Failed',
-        message: 'Failed to process subscription. Please try again.'
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const { subscription, tiers } = useSubscription();
+  const currentTier = subscription ? tiers.find((t) => t.tierId === subscription.tierId) : undefined;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-neutral-50 via-primary-50/30 to-purple-50/30">
@@ -80,7 +51,7 @@ const ClientSubscriptionPage: React.FC = () => {
             </span>
           </h2>
           <p className="text-xl text-neutral-600 max-w-3xl mx-auto leading-relaxed mb-8">
-            Choose the perfect plan for your mental health journey with professional support, privacy protection, and community access.
+            Prepay session minutes in TERAP. Plans are enforced by the TeraP subscription contract, so your minutes and expiry are verifiable on-chain.
           </p>
 
           {/* Benefits Highlight */}
@@ -91,47 +62,40 @@ const ClientSubscriptionPage: React.FC = () => {
             </div>
             <div className="bg-white/80 backdrop-blur-sm rounded-xl p-4 border border-white/50 shadow-lg">
               <Heart className="w-6 h-6 text-primary-500 mx-auto mb-2" />
-              <div className="text-sm font-medium text-neutral-800">Licensed Therapists</div>
+              <div className="text-sm font-medium text-neutral-800">Verified Therapists</div>
             </div>
             <div className="bg-white/80 backdrop-blur-sm rounded-xl p-4 border border-white/50 shadow-lg">
               <Star className="w-6 h-6 text-accent-500 mx-auto mb-2" />
-              <div className="text-sm font-medium text-neutral-800">24/7 Support</div>
+              <div className="text-sm font-medium text-neutral-800">Minutes Roll Into Sessions</div>
             </div>
             <div className="bg-white/80 backdrop-blur-sm rounded-xl p-4 border border-white/50 shadow-lg">
               <Crown className="w-6 h-6 text-purple-500 mx-auto mb-2" />
-              <div className="text-sm font-medium text-neutral-800">Premium Features</div>
+              <div className="text-sm font-medium text-neutral-800">Pay in TERAP</div>
             </div>
           </div>
         </div>
+
+        {subscription && (
+          <div className="mb-8 bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-white/50 shadow-lg flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+              <div className="text-sm text-neutral-500">Current plan</div>
+              <div className="text-lg font-semibold text-neutral-800">
+                {currentTier?.name ?? `Tier #${subscription.tierId}`} · {subscription.isActive ? 'active' : 'expired'}
+              </div>
+            </div>
+            <div className="text-sm text-neutral-600">
+              {subscription.isActive ? `${subscription.minutesRemaining} minutes left · ends ${new Date(subscription.endTime * 1000).toLocaleDateString()}` : `Ended ${new Date(subscription.endTime * 1000).toLocaleDateString()}`}
+              {' · '}paid {TeraPContracts.formatTerap(subscription.totalPaid)} TERAP so far
+            </div>
+          </div>
+        )}
 
         {/* Subscription Plans Component */}
         <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-2xl p-8 border border-white/50">
-          <SubscriptionPlanSelector 
-            onSubscribe={handleSubscribe}
-            isLoading={isLoading}
+          <SubscriptionPlanSelector
+            currentTierId={subscription?.tierId}
+            onSubscribed={() => router.push('/client/book-session')}
           />
-        </div>
-
-        {/* Trust Indicators */}
-        <div className="mt-16 text-center">
-          <div className="bg-gradient-to-r from-emerald-500/10 to-teal-500/10 rounded-2xl p-8 border border-emerald-200/50">
-            <div className="flex items-center justify-center space-x-8">
-              <div className="text-center">
-                <div className="text-2xl font-bold text-emerald-600">500+</div>
-                <div className="text-sm text-neutral-600">Verified Therapists</div>
-              </div>
-              <div className="w-px h-10 bg-neutral-300"></div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-primary-600">10,000+</div>
-                <div className="text-sm text-neutral-600">Sessions Completed</div>
-              </div>
-              <div className="w-px h-10 bg-neutral-300"></div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-purple-600">98%</div>
-                <div className="text-sm text-neutral-600">Satisfaction Rate</div>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
     </div>

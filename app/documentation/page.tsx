@@ -1,8 +1,11 @@
 'use client';
 
 import React from 'react';
-import { Book, Code, Shield, Zap, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
+import { ArrowLeft, Book, Code, Shield, Zap } from 'lucide-react';
+import { CHAIN } from '@/config/contracts';
+
+const GITHUB_URL = 'https://github.com/Emmyhack/TeraP';
 
 export default function Documentation() {
   return (
@@ -14,9 +17,13 @@ export default function Documentation() {
         </Link>
 
         <div className="bg-white rounded-xl shadow-lg p-8 mb-8">
-          <h1 className="text-4xl font-bold text-neutral-800 mb-4">TeraP Universal Documentation</h1>
+          <h1 className="text-4xl font-bold text-neutral-800 mb-4">TeraP Documentation</h1>
           <p className="text-xl text-neutral-600">
-            Complete guide to building on the TeraP decentralized wellness platform
+            How the platform is put together and how to run it yourself. The source is on{' '}
+            <a href={GITHUB_URL} target="_blank" rel="noopener noreferrer" className="text-primary-600 hover:text-primary-700">
+              GitHub
+            </a>
+            .
           </p>
         </div>
 
@@ -24,104 +31,93 @@ export default function Documentation() {
           <div className="bg-white rounded-xl shadow-lg p-6">
             <div className="flex items-center space-x-3 mb-4">
               <Book className="h-8 w-8 text-primary-600" />
-              <h2 className="text-2xl font-semibold text-neutral-800">Getting Started</h2>
+              <h2 className="text-2xl font-semibold text-neutral-800">Getting started</h2>
             </div>
-            <p className="text-neutral-600 mb-4">
-              Learn the basics of TeraP Universal and how to integrate with our platform.
-            </p>
-            <ul className="space-y-2 text-neutral-700">
-              <li>• Platform Overview</li>
-              <li>• Wallet Connection</li>
-              <li>• Token Economics</li>
-              <li>• Cross-Chain Setup</li>
-            </ul>
+            <ol className="space-y-2 text-neutral-700 list-decimal list-inside text-sm">
+              <li>Install Foundry and Node 18+, then <code>npm install</code>.</li>
+              <li>Copy <code>.env.example</code> to <code>.env.local</code> and set <code>PRIVATE_KEY</code>.</li>
+              <li>Deploy with <code>npm run deploy:testnet</code>; addresses are written to <code>deployments/&lt;chainId&gt;.json</code>.</li>
+              <li>Paste those addresses into the <code>NEXT_PUBLIC_TERAP_*</code> variables and run <code>npm run dev</code>.</li>
+              <li>After changing a contract, run <code>npm run abi</code> to refresh <code>config/abi/</code>.</li>
+            </ol>
           </div>
 
           <div className="bg-white rounded-xl shadow-lg p-6">
             <div className="flex items-center space-x-3 mb-4">
               <Code className="h-8 w-8 text-accent-600" />
-              <h2 className="text-2xl font-semibold text-neutral-800">Smart Contracts</h2>
+              <h2 className="text-2xl font-semibold text-neutral-800">Smart contracts</h2>
             </div>
-            <p className="text-neutral-600 mb-4">
-              Interact with TeraP's smart contracts across multiple blockchains.
+            <p className="text-neutral-600 mb-4 text-sm">
+              Six upgradeable (UUPS) contracts in <code>contracts/</code>. The frontend talks to them through a single
+              integration layer, <code>services/TeraPContracts.ts</code>, and the <code>useTeraP()</code> hook.
             </p>
-            <ul className="space-y-2 text-neutral-700">
-              <li>• TeraPToken Contract</li>
-              <li>• TeraPCore Functions</li>
-              <li>• Cross-Chain Calls</li>
-              <li>• Event Listening</li>
+            <ul className="space-y-1 text-neutral-700 text-sm">
+              <li>TeraPToken: ERC-20 with staking and voting power</li>
+              <li>TeraPCore: therapists, sessions, wellness circles, treasury</li>
+              <li>TeraPSubscription: prepaid therapy minutes</li>
+              <li>TeraPGovernance: proposals and voting</li>
+              <li>WellnessGameification: points, challenges, achievement NFTs</li>
+              <li>ZKCredentialVerifier: credential commitments</li>
             </ul>
+            <Link href="/smart-contracts" className="inline-block mt-4 text-primary-600 hover:text-primary-700 text-sm">
+              Deployed addresses
+            </Link>
           </div>
 
           <div className="bg-white rounded-xl shadow-lg p-6">
             <div className="flex items-center space-x-3 mb-4">
               <Shield className="h-8 w-8 text-green-600" />
-              <h2 className="text-2xl font-semibold text-neutral-800">Security</h2>
+              <h2 className="text-2xl font-semibold text-neutral-800">Privacy model</h2>
             </div>
-            <p className="text-neutral-600 mb-4">
-              Best practices for secure integration and user privacy protection.
-            </p>
-            <ul className="space-y-2 text-neutral-700">
-              <li>• Encryption Standards</li>
-              <li>• Privacy Controls</li>
-              <li>• Audit Reports</li>
-              <li>• Bug Bounty Program</li>
+            <ul className="space-y-2 text-neutral-700 text-sm">
+              <li>Users act under an anonymous ZK identity derived from a wallet signature; no personal data is stored on-chain.</li>
+              <li>Session notes and chat are encrypted client-side before they touch the chain or the network.</li>
+              <li>Therapist credentials are stored as hashes/commitments and verified through DAO proposals.</li>
+              <li>The contracts have not yet been externally audited. Use testnet funds.</li>
             </ul>
           </div>
 
           <div className="bg-white rounded-xl shadow-lg p-6">
             <div className="flex items-center space-x-3 mb-4">
               <Zap className="h-8 w-8 text-yellow-600" />
-              <h2 className="text-2xl font-semibold text-neutral-800">APIs</h2>
+              <h2 className="text-2xl font-semibold text-neutral-800">HTTP API</h2>
             </div>
-            <p className="text-neutral-600 mb-4">
-              RESTful APIs and WebSocket connections for real-time features.
+            <p className="text-neutral-600 mb-4 text-sm">
+              Three read-only JSON routes expose contract data without an RPC connection: therapists, a session by id,
+              and platform statistics.
             </p>
-            <ul className="space-y-2 text-neutral-700">
-              <li>• Authentication</li>
-              <li>• Session Management</li>
-              <li>• Real-time Chat</li>
-              <li>• Payment Processing</li>
-            </ul>
+            <Link href="/apis" className="text-primary-600 hover:text-primary-700 text-sm">
+              API reference
+            </Link>
           </div>
         </div>
 
         <div className="bg-white rounded-xl shadow-lg p-8">
-          <h2 className="text-3xl font-bold text-neutral-800 mb-6">Contract Addresses</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <h3 className="text-xl font-semibold text-neutral-800 mb-3">ZetaChain Athens Testnet</h3>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-neutral-600">TeraPToken:</span>
-                  <code className="text-primary-600">0x301f106a714cD1b5524D9F9EEa6241fE4BBF14d0</code>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-neutral-600">TeraPCore:</span>
-                  <code className="text-primary-600">0x00D92e7A9Ea96F7efb28A5e8fD8dA8772bb4dc37</code>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-neutral-600">Gateway:</span>
-                  <code className="text-primary-600">0x3c85E0cA1001f085aC2c95C50DD0a2e5A0C0e5b7</code>
-                </div>
-              </div>
+          <h2 className="text-3xl font-bold text-neutral-800 mb-6">Network</h2>
+          <div className="space-y-2 text-sm max-w-xl">
+            <div className="flex justify-between">
+              <span className="text-neutral-600">Network:</span>
+              <span className="text-neutral-800">{CHAIN.name}</span>
             </div>
-            <div>
-              <h3 className="text-xl font-semibold text-neutral-800 mb-3">Network Details</h3>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-neutral-600">Chain ID:</span>
-                  <span className="text-neutral-800">7001</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-neutral-600">RPC URL:</span>
-                  <span className="text-neutral-800">zetachain-athens-evm.blockpi.network</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-neutral-600">Explorer:</span>
-                  <span className="text-neutral-800">athens.explorer.zetachain.com</span>
-                </div>
+            <div className="flex justify-between">
+              <span className="text-neutral-600">Chain ID:</span>
+              <span className="text-neutral-800">{CHAIN.id}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-neutral-600">RPC URL:</span>
+              <code className="text-neutral-800 break-all">{CHAIN.rpcUrl}</code>
+            </div>
+            {CHAIN.explorerUrl && (
+              <div className="flex justify-between">
+                <span className="text-neutral-600">Explorer:</span>
+                <a href={CHAIN.explorerUrl} target="_blank" rel="noopener noreferrer" className="text-primary-600 hover:text-primary-700">
+                  {CHAIN.explorerUrl}
+                </a>
               </div>
+            )}
+            <div className="flex justify-between">
+              <span className="text-neutral-600">ZetaChain gateway:</span>
+              <code className="text-neutral-800 break-all">{CHAIN.gateway}</code>
             </div>
           </div>
         </div>

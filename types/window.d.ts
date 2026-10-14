@@ -1,17 +1,7 @@
 declare global {
   interface Window {
+    /** EIP-1193 provider injected by the user's EVM wallet (MetaMask, Rabby, Coinbase Wallet, ...). */
     ethereum?: any;
-    solana?: {
-      isPhantom: boolean;
-      connect(): Promise<{ publicKey: { toString(): string } }>;
-      signTransaction(transaction: any): Promise<any>;
-      publicKey: { toString(): string };
-    };
-    suiWallet?: {
-      connect(): Promise<void>;
-      signAndExecuteTransactionBlock(params: any): Promise<any>;
-    };
-    tonConnectUI?: any;
   }
 }
 

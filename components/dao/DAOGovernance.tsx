@@ -1,503 +1,453 @@
-// DAO Governance Component
 'use client';
 
-import React, { useState } from 'react';
-import { Vote, DollarSign, Users, Clock, CheckCircle, X, TrendingUp } from 'lucide-react';
-import { useZetaChainWallet } from '../wallet/ZetaChainWalletProvider';
-import { useApp } from '../../stores/AppProvider';
+import React, { useMemo, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { AlertCircle, CheckCircle, Clock, Coins, Loader2, Lock, Plus, RefreshCw, Unlock, Vote, Wallet, X } from 'lucide-react';
+import { useWeb3Wallet } from '@/components/wallet/Web3WalletProvider';
+import { useApp } from '@/stores/AppProvider';
+import { useContractQuery, useTeraP } from '@/hooks/useTeraP';
+import {
+  CORE_PARAMS,
+  EMERGENCY_ACTIONS,
+  GOV_CORE_PARAM_OFFSET,
+  GOV_PARAMS,
+  Proposal,
+  ProposalState,
+  ProposalType,
+  StakeInfo,
+  TeraPContracts,
+} from '@/services/TeraPContracts';
+import { ADDRESSES, explorerTx } from '@/config/contracts';
 
-interface Proposal {
-  id: string;
-  title: string;
-  description: string;
-  proposer: string;
-  created: string;
-  endDate: string;
-  status: 'active' | 'passed' | 'rejected' | 'executed';
-  votesFor: number;
-  votesAgainst: number;
-  totalVotes: number;
-  category: 'funding' | 'policy' | 'technical' | 'community';
-  requiredQuorum: number;
-  userVote?: 'for' | 'against' | null;
+type Tab = 'proposals' | 'staking' | 'treasury';
+
+const TYPE_LABEL: Record<ProposalType, string> = {
+  [ProposalType.TherapistVerification]: 'Therapist verification',
+  [ProposalType.FundingAllocation]: 'Funding allocation',
+  [ProposalType.ParameterChange]: 'Parameter change',
+  [ProposalType.Emergency]: 'Emergency',
+};
+
+const STATE_STYLE: Record<ProposalState, { label: string; cls: string }> = {
+  [ProposalState.Active]: { label: 'Active', cls: 'bg-primary-100 text-primary-700' },
+  [ProposalState.Defeated]: { label: 'Defeated', cls: 'bg-red-100 text-red-700' },
+  [ProposalState.Succeeded]: { label: 'Succeeded', cls: 'bg-accent-100 text-accent-700' },
+  [ProposalState.Executed]: { label: 'Executed', cls: 'bg-emerald-100 text-emerald-700' },
+  [ProposalState.Cancelled]: { label: 'Cancelled', cls: 'bg-neutral-100 text-neutral-600' },
+};
+
+const inputCls = 'w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500';
+const short = (a: string) => `${a.slice(0, 6)}...${a.slice(-4)}`;
+const STAKE_LOCK_DAYS = 30;
+
+function paramName(id: number): string {
+  const gov = (Object.entries(GOV_PARAMS) as [string, number][]).find(([, v]) => v === id);
+  if (gov) return `Governance: ${gov[0]}`;
+  const core = (Object.entries(CORE_PARAMS) as [string, number][]).find(([, v]) => v === id - GOV_CORE_PARAM_OFFSET);
+  if (core) return `Core: ${core[0]}`;
+  return `Param #${id}`;
 }
 
-interface UserStake {
-  amount: number;
-  votingPower: number;
-  rewards: number;
+function emergencyName(id: number): string {
+  const hit = (Object.entries(EMERGENCY_ACTIONS) as [string, number][]).find(([, v]) => v === id);
+  return hit ? hit[0].replace('_', ' ').toLowerCase() : `action #${id}`;
+}
+
+function formatDuration(seconds: number): string {
+  if (seconds <= 0) return 'ended';
+  const d = Math.floor(seconds / 86400);
+  const h = Math.floor((seconds % 86400) / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  if (d > 0) return `${d}d ${h}h left`;
+  if (h > 0) return `${h}h ${m}m left`;
+  return `${m}m left`;
+}
+
+function describePayload(p: Proposal): string[] {
+  const d = TeraPContracts.decodeProposalData(p.proposalType, p.proposalData);
+  switch (p.proposalType) {
+    case ProposalType.TherapistVerification:
+      return d.therapist ? [`Verify therapist ${d.therapist}`] : [];
+    case ProposalType.FundingAllocation:
+      return d.to ? [`Send ${d.amount} of token ${short(d.token)} to ${d.to}`] : [];
+    case ProposalType.ParameterChange:
+      return d.param ? [`Set ${paramName(Number(d.param))} to ${d.value}`] : [];
+    case ProposalType.Emergency:
+      return d.action ? [`Emergency ${emergencyName(Number(d.action))}${Number(d.action) === EMERGENCY_ACTIONS.REVOKE_THERAPIST ? ` for ${d.target}` : ''}`] : [];
+  }
+  return [];
 }
 
 export function DAOGovernance() {
-  const { connectedWallet } = useZetaChainWallet();
-  const { dispatch } = useApp();
-  const isConnected = !!connectedWallet;
-  const address = connectedWallet?.address;
-  const [activeTab, setActiveTab] = useState<'proposals' | 'staking' | 'treasury'>('proposals');
-  const [selectedProposal, setSelectedProposal] = useState<Proposal | null>(null);
+  const router = useRouter();
+  const { contracts, address, isConnected, wrongNetwork, canWrite, isConfigured, ensureNetwork, chain } = useTeraP();
+  const { connectWallet } = useWeb3Wallet();
+  const { addNotification } = useApp();
+  const govConfigured = isConfigured && Boolean(ADDRESSES.TeraPGovernance);
 
-  // Mock data
-  const [userStake] = useState<UserStake>({
-    amount: 1500,
-    votingPower: 3000, // 2x voting power for staked tokens
-    rewards: 45.3
-  });
+  const [activeTab, setActiveTab] = useState<Tab>('proposals');
+  const [busy, setBusy] = useState<string | null>(null);
+  const [stakeAmount, setStakeAmount] = useState('');
+  const [now] = useState(() => Math.floor(Date.now() / 1000));
 
-  const [proposals] = useState<Proposal[]>([
-    {
-      id: '1',
-      title: 'Increase Therapist Verification Standards',
-      description: 'Proposal to implement additional verification requirements for therapist onboarding, including peer reviews and continuous education requirements.',
-      proposer: '0x1234...5678',
-      created: '2025-10-25',
-      endDate: '2025-11-05',
-      status: 'active',
-      votesFor: 12500,
-      votesAgainst: 3200,
-      totalVotes: 15700,
-      category: 'policy',
-      requiredQuorum: 10000,
-      userVote: null
+  const params = useContractQuery(() => contracts.getGovernanceParams(), [contracts], { enabled: govConfigured });
+  const proposals = useContractQuery(
+    async () => {
+      const list = await contracts.getAllProposals();
+      const voted: Record<number, boolean> = {};
+      if (address) {
+        const flags = await Promise.all(list.map((p) => contracts.hasVoted(p.proposalId, address)));
+        list.forEach((p, i) => {
+          voted[p.proposalId] = flags[i];
+        });
+      }
+      return { list, voted };
     },
-    {
-      id: '2',
-      title: 'Fund Mental Health Crisis Support Program',
-      description: 'Allocate 50,000 TERAP tokens to develop and maintain a 24/7 crisis support system with trained volunteers.',
-      proposer: '0xabcd...ef12',
-      created: '2025-10-20',
-      endDate: '2025-11-03',
-      status: 'active',
-      votesFor: 8900,
-      votesAgainst: 1100,
-      totalVotes: 10000,
-      category: 'funding',
-      requiredQuorum: 8000,
-      userVote: 'for'
+    [contracts, address],
+    { enabled: govConfigured },
+  );
+  const account = useContractQuery(
+    async () => {
+      if (!address) return null;
+      const [balance, staked, votingPower, stakes] = await Promise.all([
+        contracts.getTokenBalance(address),
+        contracts.getStakedBalance(address),
+        contracts.getVotingPower(address),
+        contracts.getStakes(address),
+      ]);
+      return { balance, staked, votingPower, stakes };
     },
-    {
-      id: '3',
-      title: 'Implement Cross-Chain Bridge to Polygon',
-      description: 'Technical proposal to expand TeraP to Polygon network for lower transaction costs and broader accessibility.',
-      proposer: '0x9876...4321',
-      created: '2025-10-15',
-      endDate: '2025-10-30',
-      status: 'passed',
-      votesFor: 18500,
-      votesAgainst: 2500,
-      totalVotes: 21000,
-      category: 'technical',
-      requiredQuorum: 15000,
-      userVote: 'for'
+    [contracts, address],
+    { enabled: isConfigured && Boolean(address) },
+  );
+  const stats = useContractQuery(() => contracts.getPlatformStats(), [contracts], { enabled: isConfigured });
+
+  const activeCount = useMemo(() => proposals.data?.list.filter((p) => p.state === ProposalState.Active).length ?? 0, [proposals.data]);
+
+  const refreshAll = () => {
+    params.refresh();
+    proposals.refresh();
+    account.refresh();
+    stats.refresh();
+  };
+
+  const run = async (key: string, title: string, action: () => Promise<{ hash: string }>, after?: () => void) => {
+    if (wrongNetwork) {
+      await ensureNetwork();
+      return;
     }
-  ]);
+    setBusy(key);
+    try {
+      const tx = await action();
+      addNotification({ type: 'success', title, message: explorerTx(tx.hash) || `Tx ${tx.hash.slice(0, 10)}...` });
+      after?.();
+    } catch (e) {
+      addNotification({ type: 'error', title: `${title} failed`, message: e instanceof Error ? e.message : 'Transaction failed' });
+    } finally {
+      setBusy(null);
+    }
+  };
 
-  const treasuryBalance = 125000; // TERAP tokens
+  const handleStake = async (e: React.FormEvent) => {
+    e.preventDefault();
+    let amount: bigint;
+    try {
+      amount = TeraPContracts.parseTerap(stakeAmount);
+    } catch {
+      addNotification({ type: 'error', title: 'Invalid amount', message: 'Enter a TERAP amount to stake.' });
+      return;
+    }
+    if (amount <= 0n) return;
+    await run('stake', 'Tokens staked', () => contracts.stake(amount), () => {
+      setStakeAmount('');
+      account.refresh();
+    });
+  };
 
-  const activeProposals = proposals.filter(p => p.status === 'active');
-  const passedProposals = proposals.filter(p => p.status === 'passed');
-
-  if (!isConnected) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-primary-50 to-accent-50 flex items-center justify-center">
-        <div className="text-center p-8">
-          <h2 className="text-2xl font-bold text-neutral-800 mb-4">Connect Wallet</h2>
-          <p className="text-neutral-600">Please connect your wallet to participate in DAO governance.</p>
-        </div>
-      </div>
-    );
+  if (!isConfigured) {
+    return <Gate icon={<AlertCircle className="h-8 w-8 text-amber-600" />} title="Contracts not configured" body="Set the NEXT_PUBLIC_TERAP_* addresses in .env.local to load governance data." />;
   }
 
-  const handleVote = (proposalId: string, vote: 'for' | 'against') => {
-    dispatch({
-      type: 'ADD_NOTIFICATION',
-      payload: {
-        id: Date.now().toString(),
-        type: 'success',
-        title: 'Vote Submitted',
-        message: `Vote submitted successfully! Your ${vote} vote has been recorded.`,
-        timestamp: new Date()
-      }
-    });
-    // In real app, this would submit to blockchain
-  };
-
-  const handleStakeTokens = (amount: number) => {
-    dispatch({
-      type: 'ADD_NOTIFICATION',
-      payload: {
-        id: Date.now().toString(),
-        type: 'success',
-        title: 'Tokens Staked',
-        message: `Successfully staked ${amount} TERAP tokens!`,
-        timestamp: new Date()
-      }
-    });
-  };
+  const writeBlocked = !canWrite && !wrongNetwork;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary-50 to-accent-50 p-6">
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-neutral-800">TeraP DAO Governance</h1>
-              <p className="text-neutral-600 mt-2">Shape the future of decentralized mental health care</p>
-            </div>
-            <div className="flex items-center space-x-6">
-              <div className="text-center">
-                <div className="text-2xl font-bold text-primary-600">{userStake.votingPower.toLocaleString()}</div>
-                <div className="text-sm text-neutral-600">Voting Power</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-accent-600">{activeProposals.length}</div>
-                <div className="text-sm text-neutral-600">Active Proposals</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-secondary-600">{userStake.rewards}</div>
-                <div className="text-sm text-neutral-600">Earned Rewards</div>
-              </div>
-            </div>
-          </div>
-        </div>
+    <div className="space-y-6">
+      {/* Status banners */}
+      {!isConnected && (
+        <Banner tone="info" icon={<Wallet className="h-5 w-5 text-primary-600" />} text="Connect a wallet to vote, stake and create proposals.">
+          <button onClick={connectWallet} className="btn-primary btn-sm">Connect Wallet</button>
+        </Banner>
+      )}
+      {isConnected && wrongNetwork && (
+        <Banner tone="warn" icon={<AlertCircle className="h-5 w-5 text-amber-600" />} text={`Your wallet is on another network. Switch to ${chain.name}.`}>
+          <button onClick={ensureNetwork} className="btn-primary btn-sm">Switch network</button>
+        </Banner>
+      )}
 
-        {/* User Stake Info */}
-        <div className="bg-gradient-to-r from-primary-500 to-accent-500 rounded-xl shadow-lg p-6 mb-6 text-white">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-xl font-bold mb-2">Your Governance Power</h2>
-              <div className="flex items-center space-x-6">
-                <div>
-                  <div className="text-2xl font-bold">{userStake.amount.toLocaleString()}</div>
-                  <div className="text-primary-100">TERAP Staked</div>
-                </div>
-                <div className="text-4xl text-primary-200">→</div>
-                <div>
-                  <div className="text-2xl font-bold">{userStake.votingPower.toLocaleString()}</div>
-                  <div className="text-primary-100">Voting Power (2x multiplier)</div>
-                </div>
-              </div>
-            </div>
-            <button 
-              onClick={() => setActiveTab('staking')}
-              className="bg-white text-primary-600 px-6 py-3 rounded-lg font-medium hover:bg-primary-50 transition-colors"
-            >
-              Manage Stake
-            </button>
-          </div>
-        </div>
-
-        {/* Navigation Tabs */}
-        <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
-          <div className="flex space-x-1 bg-neutral-100 rounded-lg p-1">
-            {(['proposals', 'staking', 'treasury'] as const).map((tab) => (
-              <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                className={`flex-1 py-2 px-4 rounded-md font-medium capitalize transition-colors ${
-                  activeTab === tab
-                    ? 'bg-white text-primary-600 shadow-sm'
-                    : 'text-neutral-600 hover:text-neutral-800'
-                }`}
-              >
-                {tab}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Content */}
-        {activeTab === 'proposals' && (
-          <div className="space-y-6">
-            {/* Create Proposal Button */}
-            <div className="text-right">
-              <button className="btn-primary">Create New Proposal</button>
-            </div>
-
-            {/* Active Proposals */}
-            <div className="bg-white rounded-xl shadow-lg p-6">
-              <h2 className="text-xl font-bold text-neutral-800 mb-6">Active Proposals</h2>
-              <div className="space-y-4">
-                {activeProposals.map((proposal) => (
-                  <div key={proposal.id} className="border border-neutral-200 rounded-lg p-6">
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="flex-1">
-                        <div className="flex items-center space-x-3 mb-2">
-                          <h3 className="text-lg font-semibold text-neutral-800">{proposal.title}</h3>
-                          <span className={`px-2 py-1 rounded text-xs font-medium ${
-                            proposal.category === 'funding' ? 'bg-green-100 text-green-600' :
-                            proposal.category === 'policy' ? 'bg-blue-100 text-blue-600' :
-                            proposal.category === 'technical' ? 'bg-purple-100 text-purple-600' :
-                            'bg-neutral-100 text-neutral-600'
-                          }`}>
-                            {proposal.category}
-                          </span>
-                        </div>
-                        <p className="text-neutral-600 mb-3">{proposal.description}</p>
-                        <div className="flex items-center space-x-4 text-sm text-neutral-500">
-                          <span>Proposed by {proposal.proposer}</span>
-                          <span>•</span>
-                          <span>Ends {proposal.endDate}</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Voting Stats */}
-                    <div className="mb-4">
-                      <div className="flex items-center justify-between text-sm text-neutral-600 mb-2">
-                        <span>Voting Progress</span>
-                        <span>{proposal.totalVotes.toLocaleString()} / {proposal.requiredQuorum.toLocaleString()} (quorum)</span>
-                      </div>
-                      <div className="bg-neutral-100 rounded-full h-3 mb-3">
-                        <div className="flex h-full rounded-full overflow-hidden">
-                          <div 
-                            className="bg-green-500"
-                            style={{ width: `${(proposal.votesFor / proposal.totalVotes) * 100}%` }}
-                          />
-                          <div 
-                            className="bg-red-500"
-                            style={{ width: `${(proposal.votesAgainst / proposal.totalVotes) * 100}%` }}
-                          />
-                        </div>
-                      </div>
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="text-green-600">For: {proposal.votesFor.toLocaleString()}</span>
-                        <span className="text-red-600">Against: {proposal.votesAgainst.toLocaleString()}</span>
-                      </div>
-                    </div>
-
-                    {/* Voting Actions */}
-                    <div className="flex items-center justify-between">
-                      <button
-                        onClick={() => setSelectedProposal(proposal)}
-                        className="text-primary-600 hover:text-primary-800 font-medium"
-                      >
-                        View Details
-                      </button>
-                      {proposal.userVote ? (
-                        <div className="flex items-center space-x-2">
-                          <span className="text-sm text-neutral-600">You voted:</span>
-                          <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                            proposal.userVote === 'for' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'
-                          }`}>
-                            {proposal.userVote.toUpperCase()}
-                          </span>
-                        </div>
-                      ) : (
-                        <div className="flex space-x-3">
-                          <button
-                            onClick={() => handleVote(proposal.id, 'against')}
-                            className="px-4 py-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors font-medium"
-                          >
-                            Vote Against
-                          </button>
-                          <button
-                            onClick={() => handleVote(proposal.id, 'for')}
-                            className="px-4 py-2 bg-green-100 text-green-600 rounded-lg hover:bg-green-200 transition-colors font-medium"
-                          >
-                            Vote For
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Recent Proposals */}
-            <div className="bg-white rounded-xl shadow-lg p-6">
-              <h2 className="text-xl font-bold text-neutral-800 mb-6">Recent Proposals</h2>
-              <div className="space-y-3">
-                {passedProposals.map((proposal) => (
-                  <div key={proposal.id} className="flex items-center justify-between p-4 bg-neutral-50 rounded-lg">
-                    <div>
-                      <div className="font-medium text-neutral-800">{proposal.title}</div>
-                      <div className="text-sm text-neutral-600">{proposal.category} • {proposal.endDate}</div>
-                    </div>
-                    <div className="flex items-center space-x-3">
-                      <span className="px-3 py-1 bg-green-100 text-green-600 rounded-full text-xs font-medium">
-                        PASSED
-                      </span>
-                      <CheckCircle className="h-5 w-5 text-green-500" />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {activeTab === 'staking' && (
-          <div className="space-y-6">
-            {/* Staking Overview */}
-            <div className="bg-white rounded-xl shadow-lg p-6">
-              <h2 className="text-xl font-bold text-neutral-800 mb-6">Staking Overview</h2>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                <div className="text-center p-6 bg-primary-50 rounded-lg">
-                  <Vote className="h-12 w-12 text-primary-600 mx-auto mb-4" />
-                  <div className="text-2xl font-bold text-primary-600">{userStake.amount.toLocaleString()}</div>
-                  <div className="text-sm text-neutral-600">TERAP Staked</div>
-                </div>
-                <div className="text-center p-6 bg-accent-50 rounded-lg">
-                  <TrendingUp className="h-12 w-12 text-accent-600 mx-auto mb-4" />
-                  <div className="text-2xl font-bold text-accent-600">{userStake.votingPower.toLocaleString()}</div>
-                  <div className="text-sm text-neutral-600">Voting Power</div>
-                </div>
-                <div className="text-center p-6 bg-secondary-50 rounded-lg">
-                  <DollarSign className="h-12 w-12 text-secondary-600 mx-auto mb-4" />
-                  <div className="text-2xl font-bold text-secondary-600">{userStake.rewards}</div>
-                  <div className="text-sm text-neutral-600">Rewards Earned</div>
-                </div>
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <h3 className="text-lg font-semibold text-neutral-800 mb-4">Stake More Tokens</h3>
-                  <div className="space-y-3">
-                    <input
-                      type="number"
-                      placeholder="Amount to stake"
-                      className="form-input w-full"
-                    />
-                    <button className="btn-primary w-full">Stake Tokens</button>
-                  </div>
-                </div>
-                <div>
-                  <h3 className="text-lg font-semibold text-neutral-800 mb-4">Unstake Tokens</h3>
-                  <div className="space-y-3">
-                    <input
-                      type="number"
-                      placeholder="Amount to unstake"
-                      className="form-input w-full"
-                    />
-                    <button className="btn-outline w-full">Unstake Tokens</button>
-                    <p className="text-xs text-neutral-500">30-day cooldown period applies</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Rewards */}
-            <div className="bg-white rounded-xl shadow-lg p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-bold text-neutral-800">Staking Rewards</h2>
-                <button className="btn-primary">Claim Rewards</button>
-              </div>
-              <div className="bg-gradient-to-r from-accent-50 to-secondary-50 rounded-lg p-6">
-                <div className="text-center">
-                  <div className="text-3xl font-bold text-accent-600 mb-2">{userStake.rewards} TERAP</div>
-                  <div className="text-neutral-600">Available to claim</div>
-                  <div className="text-sm text-neutral-500 mt-2">
-                    Earn 12% APY by staking TERAP tokens and participating in governance
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {activeTab === 'treasury' && (
-          <div className="bg-white rounded-xl shadow-lg p-6">
-            <h2 className="text-xl font-bold text-neutral-800 mb-6">DAO Treasury</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-              <div className="text-center p-6 bg-primary-50 rounded-lg">
-                <DollarSign className="h-12 w-12 text-primary-600 mx-auto mb-4" />
-                <div className="text-2xl font-bold text-primary-600">{treasuryBalance.toLocaleString()}</div>
-                <div className="text-sm text-neutral-600">TERAP Balance</div>
-              </div>
-              <div className="text-center p-6 bg-accent-50 rounded-lg">
-                <Users className="h-12 w-12 text-accent-600 mx-auto mb-4" />
-                <div className="text-2xl font-bold text-accent-600">2,847</div>
-                <div className="text-sm text-neutral-600">DAO Members</div>
-              </div>
-              <div className="text-center p-6 bg-secondary-50 rounded-lg">
-                <Vote className="h-12 w-12 text-secondary-600 mx-auto mb-4" />
-                <div className="text-2xl font-bold text-secondary-600">{proposals.length}</div>
-                <div className="text-sm text-neutral-600">Total Proposals</div>
-              </div>
-              <div className="text-center p-6 bg-neutral-50 rounded-lg">
-                <Clock className="h-12 w-12 text-neutral-600 mx-auto mb-4" />
-                <div className="text-2xl font-bold text-neutral-600">24h</div>
-                <div className="text-sm text-neutral-600">Avg. Response Time</div>
-              </div>
-            </div>
-            
-            <div className="border-t pt-6">
-              <h3 className="text-lg font-semibold text-neutral-800 mb-4">Recent Treasury Activity</h3>
-              <div className="space-y-3">
-                <div className="flex items-center justify-between p-4 bg-neutral-50 rounded-lg">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                    <span className="text-neutral-800">Crisis Support Program Funding</span>
-                  </div>
-                  <span className="text-green-600 font-medium">-50,000 TERAP</span>
-                </div>
-                <div className="flex items-center justify-between p-4 bg-neutral-50 rounded-lg">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                    <span className="text-neutral-800">Staking Rewards Distribution</span>
-                  </div>
-                  <span className="text-blue-600 font-medium">-12,500 TERAP</span>
-                </div>
-                <div className="flex items-center justify-between p-4 bg-neutral-50 rounded-lg">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-2 h-2 bg-primary-500 rounded-full"></div>
-                    <span className="text-neutral-800">Platform Revenue (Session Fees)</span>
-                  </div>
-                  <span className="text-primary-600 font-medium">+8,750 TERAP</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
+      {/* Overview stats */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <StatCard label="Active proposals" value={proposals.data ? String(activeCount) : '—'} sub={govConfigured ? `${proposals.data?.list.length ?? '—'} total` : 'Governance not configured'} />
+        <StatCard label="Your voting power" value={account.data ? `${TeraPContracts.formatTerap(account.data.votingPower)}` : '—'} sub="balance + 2x staked" />
+        <StatCard label="Proposal threshold" value={params.data ? TeraPContracts.formatTerap(params.data.proposalThreshold) : '—'} sub="TERAP voting power" />
+        <StatCard label="Quorum" value={params.data ? `${(params.data.quorumBps / 100).toFixed(1)}%` : '—'} sub={params.data ? `${TeraPContracts.formatTerap(params.data.quorum, 0)} TERAP · ${formatDuration(params.data.votingPeriod).replace(' left', '')} voting` : 'of total supply'} />
       </div>
 
-      {/* Proposal Detail Modal */}
-      {selectedProposal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-6 z-50">
-          <div className="bg-white rounded-xl max-w-2xl w-full max-h-[80vh] overflow-y-auto">
-            <div className="p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-2xl font-bold text-neutral-800">{selectedProposal.title}</h2>
-                <button
-                  onClick={() => setSelectedProposal(null)}
-                  className="text-neutral-500 hover:text-neutral-700"
-                >
-                  <X className="h-6 w-6" />
-                </button>
-              </div>
-              <p className="text-neutral-600 mb-6">{selectedProposal.description}</p>
-              
-              {/* Voting interface would go here */}
-              <div className="border-t pt-4">
-                <div className="flex space-x-3">
-                  <button
-                    onClick={() => {
-                      handleVote(selectedProposal.id, 'for');
-                      setSelectedProposal(null);
-                    }}
-                    className="btn-primary flex-1"
-                  >
-                    Vote For
-                  </button>
-                  <button
-                    onClick={() => {
-                      handleVote(selectedProposal.id, 'against');
-                      setSelectedProposal(null);
-                    }}
-                    className="btn-outline flex-1"
-                  >
-                    Vote Against
-                  </button>
+      {/* Tabs */}
+      <div className="flex items-center justify-between">
+        <div className="flex space-x-1 bg-neutral-100 rounded-lg p-1">
+          {(['proposals', 'staking', 'treasury'] as const).map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={`py-2 px-5 rounded-md font-medium capitalize transition-colors ${activeTab === tab ? 'bg-white text-primary-600 shadow-sm' : 'text-neutral-600 hover:text-neutral-800'}`}
+            >
+              {tab}
+            </button>
+          ))}
+        </div>
+        <div className="flex items-center space-x-2">
+          <button onClick={refreshAll} className="btn-ghost" title="Refresh from chain">
+            <RefreshCw className={`h-4 w-4 ${proposals.loading || account.loading ? 'animate-spin' : ''}`} />
+          </button>
+          <button onClick={() => router.push('/dao/create-proposal')} className="btn-primary btn-sm flex items-center space-x-1">
+            <Plus className="h-4 w-4" />
+            <span>New proposal</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Proposals */}
+      {activeTab === 'proposals' && (
+        !govConfigured ? (
+          <Gate icon={<AlertCircle className="h-8 w-8 text-amber-600" />} title="Governance not configured" body="Set NEXT_PUBLIC_TERAP_GOVERNANCE_ADDRESS in .env.local." />
+        ) : proposals.error ? (
+          <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-sm text-red-700">{proposals.error}</div>
+        ) : proposals.loading && !proposals.data ? (
+          <Loading text="Loading proposals from chain..." />
+        ) : !proposals.data || proposals.data.list.length === 0 ? (
+          <Gate icon={<Vote className="h-8 w-8 text-neutral-400" />} title="No proposals yet" body="Anyone with enough voting power can create the first proposal." />
+        ) : (
+          <div className="space-y-4">
+            {proposals.data.list.map((p) => {
+              const total = p.votesFor + p.votesAgainst;
+              const forPct = total > 0n ? Number((p.votesFor * 10000n) / total) / 100 : 0;
+              const quorum = params.data?.quorum ?? 0n;
+              const quorumPct = quorum > 0n ? Math.min(100, Number((total * 10000n) / quorum) / 100) : 0;
+              const voted = proposals.data?.voted[p.proposalId] ?? false;
+              const isActive = p.state === ProposalState.Active;
+              const isProposer = Boolean(address) && p.proposer.toLowerCase() === address!.toLowerCase();
+              const st = STATE_STYLE[p.state];
+              const key = `p${p.proposalId}`;
+              return (
+                <div key={p.proposalId} className="bg-white rounded-xl shadow-lg p-6">
+                  <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-3">
+                    <div className="flex-1">
+                      <div className="flex items-center flex-wrap gap-2 mb-2">
+                        <span className="text-xs text-neutral-500">#{p.proposalId}</span>
+                        <h3 className="text-lg font-semibold text-neutral-800">{p.title}</h3>
+                        <span className={`px-2 py-0.5 rounded text-xs font-medium ${st.cls}`}>{st.label}</span>
+                        <span className="px-2 py-0.5 rounded text-xs font-medium bg-neutral-100 text-neutral-700">{TYPE_LABEL[p.proposalType]}</span>
+                      </div>
+                      <p className="text-neutral-600 text-sm whitespace-pre-line">{p.description}</p>
+                      {describePayload(p).map((line) => (
+                        <p key={line} className="mt-2 text-xs font-mono bg-neutral-50 border border-neutral-200 rounded px-2 py-1 text-neutral-700 break-all">{line}</p>
+                      ))}
+                    </div>
+                    <div className="text-right text-xs text-neutral-500 whitespace-nowrap">
+                      <div className="flex items-center justify-end space-x-1"><Clock className="h-3 w-3" /><span>{isActive ? formatDuration(p.endTime - now) : `ended ${new Date(p.endTime * 1000).toLocaleDateString()}`}</span></div>
+                      <div className="mt-1" title={p.proposer}>by {short(p.proposer)}{isProposer ? ' (you)' : ''}</div>
+                    </div>
+                  </div>
+
+                  <div className="mt-4">
+                    <div className="flex justify-between text-sm mb-1">
+                      <span className="text-accent-700 font-medium">For: {TeraPContracts.formatTerap(p.votesFor)} TERAP</span>
+                      <span className="text-red-600 font-medium">Against: {TeraPContracts.formatTerap(p.votesAgainst)} TERAP</span>
+                    </div>
+                    <div className="h-2 bg-red-100 rounded-full overflow-hidden">
+                      <div className="h-full bg-accent-500" style={{ width: `${forPct}%` }} />
+                    </div>
+                    <div className="flex justify-between text-xs text-neutral-500 mt-1">
+                      <span>{forPct.toFixed(1)}% in favour</span>
+                      <span>Quorum {quorumPct.toFixed(1)}%</span>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-wrap gap-3 mt-4">
+                    {isActive && (
+                      <>
+                        <button
+                          onClick={() => run(key, 'Vote cast', () => contracts.vote(p.proposalId, true), proposals.refresh)}
+                          disabled={busy === key || voted || writeBlocked}
+                          className="btn-primary btn-sm flex items-center space-x-1 disabled:opacity-50"
+                        >
+                          <CheckCircle className="h-4 w-4" /><span>{voted ? 'Voted' : 'Vote for'}</span>
+                        </button>
+                        <button
+                          onClick={() => run(key, 'Vote cast', () => contracts.vote(p.proposalId, false), proposals.refresh)}
+                          disabled={busy === key || voted || writeBlocked}
+                          className="btn-outline btn-sm flex items-center space-x-1 disabled:opacity-50"
+                        >
+                          <X className="h-4 w-4" /><span>Vote against</span>
+                        </button>
+                        {isProposer && (
+                          <button
+                            onClick={() => run(key, 'Proposal cancelled', () => contracts.cancelProposal(p.proposalId), proposals.refresh)}
+                            disabled={busy === key || writeBlocked}
+                            className="btn-ghost btn-sm text-red-600 disabled:opacity-50"
+                          >
+                            Cancel proposal
+                          </button>
+                        )}
+                      </>
+                    )}
+                    {p.state === ProposalState.Succeeded && (
+                      <button
+                        onClick={() => run(key, 'Proposal executed', () => contracts.executeProposal(p.proposalId), refreshAll)}
+                        disabled={busy === key || writeBlocked}
+                        className="btn-success btn-sm disabled:opacity-50"
+                      >
+                        Execute
+                      </button>
+                    )}
+                    {busy === key && <Loader2 className="h-5 w-5 animate-spin text-primary-600 self-center" />}
+                    {isActive && voted && <span className="text-xs text-neutral-500 self-center">You already voted on this proposal.</span>}
+                  </div>
                 </div>
+              );
+            })}
+          </div>
+        )
+      )}
+
+      {/* Staking */}
+      {activeTab === 'staking' && (
+        !isConnected ? (
+          <Gate icon={<Wallet className="h-8 w-8 text-primary-600" />} title="Connect your wallet" body="Staking positions are read from the TERAP token contract for your address." />
+        ) : account.loading && !account.data ? (
+          <Loading text="Loading your TERAP balances..." />
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-1 space-y-4">
+              <div className="bg-white rounded-xl shadow-lg p-6 space-y-3">
+                <Row label="TERAP balance" value={account.data ? `${TeraPContracts.formatTerap(account.data.balance)} TERAP` : '—'} />
+                <Row label="Staked" value={account.data ? `${TeraPContracts.formatTerap(account.data.staked)} TERAP` : '—'} />
+                <Row label="Voting power" value={account.data ? `${TeraPContracts.formatTerap(account.data.votingPower)}` : '—'} />
+                {account.error && <p className="text-xs text-red-600">{account.error}</p>}
               </div>
+              <form onSubmit={handleStake} className="bg-white rounded-xl shadow-lg p-6">
+                <h3 className="font-semibold text-neutral-800 mb-3 flex items-center space-x-2"><Lock className="h-4 w-4 text-primary-600" /><span>Stake TERAP</span></h3>
+                <input type="number" min="0" step="any" placeholder="Amount" className={inputCls} value={stakeAmount} onChange={(e) => setStakeAmount(e.target.value)} />
+                <p className="text-xs text-neutral-500 mt-2">Locked for {STAKE_LOCK_DAYS} days. Earns 5% APY and counts double towards voting power.</p>
+                <button type="submit" disabled={busy === 'stake' || writeBlocked || !stakeAmount} className="btn-primary w-full mt-4 py-2 flex items-center justify-center disabled:opacity-50">
+                  {busy === 'stake' ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                  {wrongNetwork ? `Switch to ${chain.name}` : 'Stake'}
+                </button>
+              </form>
+            </div>
+            <div className="lg:col-span-2 bg-white rounded-xl shadow-lg p-6">
+              <h3 className="font-semibold text-neutral-800 mb-4">Your positions</h3>
+              {!account.data || account.data.stakes.length === 0 ? (
+                <p className="text-sm text-neutral-600">No active stakes.</p>
+              ) : (
+                <div className="space-y-3">
+                  {account.data.stakes.map((s: StakeInfo) => {
+                    const unlocked = s.unlockTime <= now;
+                    const key = `u${s.index}`;
+                    return (
+                      <div key={s.index} className="border border-neutral-200 rounded-lg p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                        <div>
+                          <div className="font-medium text-neutral-800">{TeraPContracts.formatTerap(s.amount)} TERAP</div>
+                          <div className="text-xs text-neutral-500">
+                            Staked {new Date(s.timestamp * 1000).toLocaleDateString()} · {unlocked ? 'Unlocked' : `Unlocks ${new Date(s.unlockTime * 1000).toLocaleDateString()} (${formatDuration(s.unlockTime - now)})`}
+                          </div>
+                          <div className="text-xs text-accent-700 mt-1">Accrued reward: {TeraPContracts.formatTerap(s.reward, 4)} TERAP</div>
+                        </div>
+                        <button
+                          onClick={() => run(key, 'Unstaked', () => contracts.unstake(s.index), account.refresh)}
+                          disabled={!unlocked || busy === key || writeBlocked}
+                          className="btn-outline btn-sm flex items-center space-x-1 disabled:opacity-50"
+                          title={unlocked ? 'Withdraw stake and reward' : 'Still locked'}
+                        >
+                          {busy === key ? <Loader2 className="h-4 w-4 animate-spin" /> : <Unlock className="h-4 w-4" />}
+                          <span>Unstake</span>
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           </div>
-        </div>
+        )
+      )}
+
+      {/* Treasury */}
+      {activeTab === 'treasury' && (
+        stats.error ? (
+          <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-sm text-red-700">{stats.error}</div>
+        ) : stats.loading && !stats.data ? (
+          <Loading text="Loading treasury..." />
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <StatCard label="DAO treasury" value={stats.data ? `${TeraPContracts.formatTerap(stats.data.treasury)} TERAP` : '—'} sub="held by TeraPCore" icon={<Coins className="h-5 w-5 text-accent-600" />} />
+            <StatCard label="Platform fee" value={stats.data ? `${(stats.data.platformFeeBps / 100).toFixed(2)}%` : '—'} sub="of each session, to treasury" />
+            <StatCard label="Total staked" value={stats.data ? `${TeraPContracts.formatTerap(stats.data.totalStaked, 0)} TERAP` : '—'} sub={stats.data && stats.data.totalSupply > 0n ? `${(Number((stats.data.totalStaked * 10000n) / stats.data.totalSupply) / 100).toFixed(2)}% of supply` : ''} />
+            <StatCard label="TERAP supply" value={stats.data ? `${TeraPContracts.formatTerap(stats.data.totalSupply, 0)}` : '—'} sub={stats.data ? `${stats.data.sessions} sessions · ${stats.data.verifiedTherapists} verified therapists` : ''} />
+            <div className="md:col-span-2 lg:col-span-4 bg-white rounded-xl shadow-lg p-6 text-sm text-neutral-600">
+              Treasury funds can only leave TeraPCore through a passed <span className="font-medium text-neutral-800">Funding allocation</span> proposal. Fees are set by <span className="font-medium text-neutral-800">Parameter change</span> proposals.
+            </div>
+          </div>
+        )
       )}
     </div>
   );
-};
+}
+
+function StatCard({ label, value, sub, icon }: { label: string; value: string; sub?: string; icon?: React.ReactNode }) {
+  return (
+    <div className="bg-white rounded-xl shadow-lg p-5">
+      <div className="flex items-center justify-between text-sm text-neutral-500 mb-1"><span>{label}</span>{icon}</div>
+      <div className="text-2xl font-bold text-neutral-800 truncate">{value}</div>
+      {sub && <div className="text-xs text-neutral-500 mt-1">{sub}</div>}
+    </div>
+  );
+}
+
+function Row({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex justify-between text-sm">
+      <span className="text-neutral-600">{label}</span>
+      <span className="font-medium text-neutral-800">{value}</span>
+    </div>
+  );
+}
+
+function Banner({ tone, icon, text, children }: { tone: 'info' | 'warn'; icon: React.ReactNode; text: string; children?: React.ReactNode }) {
+  return (
+    <div className={`${tone === 'warn' ? 'bg-amber-50 border-amber-200' : 'bg-white border-neutral-200'} border rounded-xl p-4 flex items-center justify-between gap-4`}>
+      <div className="flex items-center space-x-3 text-sm text-neutral-700">{icon}<span>{text}</span></div>
+      {children}
+    </div>
+  );
+}
+
+function Loading({ text }: { text: string }) {
+  return (
+    <div className="bg-white rounded-xl shadow-lg p-8 flex items-center justify-center text-neutral-600">
+      <Loader2 className="h-5 w-5 animate-spin mr-3 text-primary-600" />{text}
+    </div>
+  );
+}
+
+function Gate({ icon, title, body }: { icon: React.ReactNode; title: string; body: string }) {
+  return (
+    <div className="bg-white rounded-xl shadow-lg p-8 text-center">
+      <div className="flex justify-center mb-3">{icon}</div>
+      <h3 className="text-lg font-semibold text-neutral-800 mb-1">{title}</h3>
+      <p className="text-sm text-neutral-600">{body}</p>
+    </div>
+  );
+}
 
 export default DAOGovernance;

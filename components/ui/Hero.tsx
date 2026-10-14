@@ -1,15 +1,15 @@
 'use client';
 
 import React from 'react';
-import { useRouter } from 'next/navigation';
 import { useWeb3Wallet } from '@/components/wallet/Web3WalletProvider';
-import { useApp } from '@/stores/AppProvider';
-import { Heart, Brain, ArrowRight, Shield, Globe, Users, Link, MessageCircle, Zap, Lock, Star, Sparkles, Activity } from 'lucide-react';
+import { useContractQuery, useTeraP } from '@/hooks/useTeraP';
+import { Heart, Brain, ArrowRight, Shield, Globe, Users, MessageCircle, Zap, Lock, Sparkles, Activity, UserCheck } from 'lucide-react';
 
 export default function Hero() {
-  const router = useRouter();
   const { isConnected, connectWallet } = useWeb3Wallet();
-  const { state, dispatch } = useApp();
+  const { contracts, isConfigured } = useTeraP();
+  const platform = useContractQuery(() => contracts.getPlatformStats(), [contracts], { enabled: isConfigured });
+  const stats = platform.data && !platform.loading ? platform.data : null;
   
   const handleConnect = async () => {
     try {
@@ -129,15 +129,11 @@ export default function Hero() {
                   <div className="w-8 h-8 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full border-2 border-white"></div>
                   <div className="w-8 h-8 bg-gradient-to-br from-green-400 to-green-600 rounded-full border-2 border-white"></div>
                 </div>
-                <span className="text-sm text-neutral-600 font-medium">1,200+ active users</span>
+                <span className="text-sm text-neutral-600 font-medium">{stats ? stats.sessions.toLocaleString() : '—'} sessions booked</span>
               </div>
               <div className="flex items-center space-x-1">
-                <Star className="w-4 h-4 text-yellow-500 fill-current" />
-                <Star className="w-4 h-4 text-yellow-500 fill-current" />
-                <Star className="w-4 h-4 text-yellow-500 fill-current" />
-                <Star className="w-4 h-4 text-yellow-500 fill-current" />
-                <Star className="w-4 h-4 text-yellow-500 fill-current" />
-                <span className="text-sm text-neutral-600 ml-1">4.9/5 rating</span>
+                <UserCheck className="w-4 h-4 text-accent-600" />
+                <span className="text-sm text-neutral-600 ml-1">{stats ? stats.verifiedTherapists.toLocaleString() : '—'} verified therapists</span>
               </div>
             </div>
           </div>
@@ -179,7 +175,7 @@ export default function Hero() {
                   
                   <div className="flex space-x-3 justify-end">
                     <div className="flex-1 bg-primary-500 rounded-2xl rounded-tr-sm px-4 py-3 max-w-xs ml-12">
-                      <p className="text-sm text-white">I've been struggling with anxiety lately, but I feel safe talking here.</p>
+                      <p className="text-sm text-white">I&apos;ve been struggling with anxiety lately, but I feel safe talking here.</p>
                     </div>
                     <div className="w-8 h-8 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center">
                       <Heart className="w-4 h-4 text-white" />

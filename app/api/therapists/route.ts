@@ -1,34 +1,38 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { blockchainDataService } from '@/services/BlockchainDataService';
+import { CONTRACTS_CONFIGURED } from '@/config/contracts';
+import { TeraPContracts, terapContracts, TherapistProfile } from '@/services/TeraPContracts';
 
+export const dynamic = 'force-dynamic';
+
+/** Serialise a profile for JSON: bigints become strings, hourlyRate also as a TERAP string. */
+function serialise(t: TherapistProfile) {
+  return {
+    ...t,
+    hourlyRate: t.hourlyRate.toString(),
+    hourlyRateTerap: TeraPContracts.formatTerap(t.hourlyRate),
+  };
+}
+
+/** GET /api/therapists?specialty=<text> — verified, active therapists read from TeraPCore. */
 export async function GET(request: NextRequest) {
+  if (!CONTRACTS_CONFIGURED) {
+    return NextResponse.json({ error: 'Contracts not configured' }, { status: 503 });
+  }
+
+  const specialty = request.nextUrl.searchParams.get('specialty')?.trim().toLowerCase() || null;
+
   try {
-    const { searchParams } = new URL(request.url);
-    const specialty = searchParams.get('specialty');
-    const verified = searchParams.get('verified') === 'true';
-
-    let therapists = await blockchainDataService.getAllTherapists();
-    
+    let therapists = await terapContracts.getVerifiedTherapists();
     if (specialty) {
-      therapists = therapists.filter(t => 
-        t.specializations.includes(specialty.toLowerCase())
-      );
+      therapists = therapists.filter((t) => t.specializations.some((s) => s.toLowerCase().includes(specialty)));
     }
-    
-    if (verified) {
-      therapists = therapists.filter(t => t.isVerified);
-    }
-
     return NextResponse.json({
-      therapists,
+      therapists: therapists.map(serialise),
       total: therapists.length,
-      filters: { specialty, verified }
+      filters: { specialty },
     });
   } catch (error) {
     console.error('Therapists API error:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch therapists' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: TeraPContracts.parseError(error) }, { status: 500 });
   }
 }

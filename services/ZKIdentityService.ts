@@ -1,4 +1,11 @@
-// Simplified ZK Identity system for anonymous therapy platform
+/**
+ * Client-side anonymous identity.
+ *
+ * Derives a commitment/nullifier pair from a wallet signature and stores it in the browser so a
+ * user can act under a stable pseudonym. The "proofs" produced here are hash-based attestations,
+ * not zero-knowledge SNARKs, and nothing in this file is verified on-chain. On-chain identity is
+ * the wallet address; therapist credential commitments live in ZKCredentialVerifier.sol.
+ */
 export class ZKIdentity {
   public readonly commitment: string;
   public readonly nullifier: string;

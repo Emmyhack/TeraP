@@ -21,6 +21,8 @@ import { useWeb3Wallet } from '@/components/wallet/Web3WalletProvider';
 import { zkCredentialService } from '@/services/ZKCredentialVerificationService';
 import type { TherapistCredential, ZKCredentialProof } from '@/services/ZKCredentialVerificationService';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
+import { useContractQuery, useTeraP } from '@/hooks/useTeraP';
+import { TeraPContracts, type TherapistProfile } from '@/services/TeraPContracts';
 
 interface TherapistProfileData {
   basicInfo: {
@@ -58,6 +60,27 @@ const ZKTherapistProfile: React.FC = () => {
   const [isVerifying, setIsVerifying] = useState(false);
   const [showPrivateData, setShowPrivateData] = useState(false);
   const [verificationStatus, setVerificationStatus] = useState<'none' | 'pending' | 'verified' | 'failed'>('none');
+  const [licenseNumberInput, setLicenseNumberInput] = useState('');
+
+  // On-chain therapist profile (TeraPCore) — source of truth for rate, specializations and DAO verification.
+  const { contracts, isConfigured } = useTeraP();
+  const onChain = useContractQuery<TherapistProfile | null>(async () => (address ? contracts.getTherapistProfile(address) : null), [contracts, address], {
+    enabled: isConfigured && Boolean(address),
+  });
+  const onChainProfile = onChain.data;
+
+  // Seed the local hourly rate from the on-chain profile when nothing is saved locally.
+  useEffect(() => {
+    if (!onChainProfile) return;
+    setProfileData(prev => {
+      try {
+        if (localStorage.getItem(`therapist_profile_${address}`)) return prev;
+      } catch {
+        /* storage unavailable */
+      }
+      return { ...prev, basicInfo: { ...prev.basicInfo, hourlyRate: Number(TeraPContracts.formatTerap(onChainProfile.hourlyRate, 6).replace(/[^0-9.]/g, '')) } };
+    });
+  }, [onChainProfile, address]);
 
   // Load existing profile data
   useEffect(() => {
@@ -83,39 +106,40 @@ const ZKTherapistProfile: React.FC = () => {
   const handleCredentialUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
+    if (!licenseNumberInput.trim()) {
+      alert('Enter your license number before uploading the credential document.');
+      event.target.value = '';
+      return;
+    }
 
     setIsUploading(true);
     try {
-      // In a real implementation, this would:
-      // 1. Upload file to secure storage (IPFS)
-      // 2. Extract credential data using OCR/AI
-      // 3. Validate against licensing databases
-      
-      // Simulated credential data extraction
+      // The document itself stays local; only the license number you typed and the specializations from your
+      // on-chain profile are used to build the credential record for ZK proof generation.
+      const specializations = onChainProfile?.specializations ?? [];
       const extractedCredential: TherapistCredential = {
         id: `cred_${Date.now()}`,
         licenseType: 'psychologist',
-        licenseNumber: `PSY${Math.floor(Math.random() * 100000)}`,
-        issuingState: 'California',
-        issuingCountry: 'USA',
-        issueDate: new Date('2015-06-15'),
-        expiryDate: new Date('2025-06-15'),
-        specializations: ['Anxiety', 'Depression', 'PTSD', 'CBT'],
-        educationLevel: 'doctorate',
-        yearsOfExperience: 8
+        licenseNumber: licenseNumberInput.trim(),
+        issuingState: '',
+        issuingCountry: '',
+        issueDate: new Date(),
+        expiryDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
+        specializations,
+        educationLevel: 'masters',
+        yearsOfExperience: 0
       };
 
       setProfileData(prev => ({
         ...prev,
         credentials: extractedCredential
       }));
-
-      alert('Credential data extracted successfully! Please review and verify.');
     } catch (error) {
       console.error('Failed to process credential:', error);
       alert('Failed to process credential file');
     } finally {
       setIsUploading(false);
+      event.target.value = '';
     }
   };
 
@@ -260,10 +284,27 @@ const ZKTherapistProfile: React.FC = () => {
                       <Lock className="h-4 w-4" />
                       <span>Anonymous ID: {currentSession.profile.zkCommitment?.slice(0, 8)}...</span>
                     </div>
-                    <div className="flex items-center space-x-1">
-                      <Clock className="h-4 w-4" />
-                      <span>Verified since {new Date().toLocaleDateString()}</span>
-                    </div>
+                    {onChainProfile ? (
+                      <>
+                        <div className="flex items-center space-x-1">
+                          <Shield className={`h-4 w-4 ${onChainProfile.isVerified ? 'text-green-600' : 'text-amber-500'}`} />
+                          <span>{onChainProfile.isVerified ? 'DAO verified' : 'Pending DAO verification'}</span>
+                        </div>
+                        <div className="flex items-center space-x-1">
+                          <Star className="h-4 w-4 text-yellow-400" />
+                          <span>{onChainProfile.ratingCount > 0 ? (onChainProfile.rating / 20).toFixed(1) : 'No ratings'}</span>
+                        </div>
+                        <div className="flex items-center space-x-1">
+                          <Clock className="h-4 w-4" />
+                          <span>{onChainProfile.totalSessions} sessions • {TeraPContracts.formatTerap(onChainProfile.hourlyRate)} TERAP/h on-chain</span>
+                        </div>
+                      </>
+                    ) : (
+                      <div className="flex items-center space-x-1">
+                        <Clock className="h-4 w-4" />
+                        <span>{isConfigured ? 'Not registered on-chain' : 'Contracts not configured'}</span>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -375,7 +416,12 @@ const ZKTherapistProfile: React.FC = () => {
                       max="500"
                     />
                   ) : (
-                    <p className="text-gray-900">${profileData.basicInfo.hourlyRate} TERAP/hour</p>
+                    <p className="text-gray-900">
+                      {profileData.basicInfo.hourlyRate} TERAP/hour
+                      {onChainProfile && (
+                        <span className="text-xs text-gray-500 ml-2">(on-chain: {TeraPContracts.formatTerap(onChainProfile.hourlyRate)} — edit it from the therapist dashboard)</span>
+                      )}
+                    </p>
                   )}
                 </div>
               </div>
@@ -395,6 +441,13 @@ const ZKTherapistProfile: React.FC = () => {
                   <div className="text-center">
                     <Upload className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                     <p className="text-gray-600 mb-4">Upload your professional credentials for zero-knowledge verification</p>
+                    <input
+                      type="text"
+                      value={licenseNumberInput}
+                      onChange={(e) => setLicenseNumberInput(e.target.value)}
+                      placeholder="License number"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm mb-3"
+                    />
                     <label className="cursor-pointer">
                       <input
                         type="file"

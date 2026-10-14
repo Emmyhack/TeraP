@@ -185,8 +185,18 @@ const ZKClientProfile: React.FC = () => {
   const submitAssessment = async (assessmentType: 'PHQ9' | 'GAD7') => {
     if (!currentSession?.profile?.zkCommitment) return;
 
-    // Simulated assessment responses (in real app, would come from assessment form)
-    const responses = Array.from({ length: 9 }, () => Math.floor(Math.random() * 4));
+    // Item responses (0-3) are derived from the current mood check-in sliders until a full
+    // questionnaire form exists; PHQ-9 has 9 items, GAD-7 has 7.
+    const itemCount = assessmentType === 'PHQ9' ? 9 : 7;
+    const scale = (value: number, invert = false) => {
+      const v = Math.min(10, Math.max(0, value));
+      const normalized = invert ? 10 - v : v;
+      return Math.min(3, Math.floor(normalized / 2.5));
+    };
+    const base = assessmentType === 'PHQ9'
+      ? [scale(currentMood.moodScore, true), scale(currentMood.energyLevel, true), scale(10 - Math.min(10, currentMood.sleepHours))]
+      : [scale(currentMood.anxietyLevel), scale(currentMood.moodScore, true), scale(currentMood.energyLevel, true)];
+    const responses = Array.from({ length: itemCount }, (_, i) => base[i % base.length]);
     const totalScore = responses.reduce((sum, score) => sum + score, 0);
     
     let severity: 'minimal' | 'mild' | 'moderate' | 'severe' = 'minimal';
