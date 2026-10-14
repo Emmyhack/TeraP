@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { SUPPORTED_CHAINS } from '@/config/contracts';
+import { useApp } from '@/stores/AppProvider';
 
 // Types for Web3 wallet functionality
 interface WalletState {
@@ -23,11 +24,52 @@ interface Web3WalletContextType extends WalletState {
 
 const Web3WalletContext = createContext<Web3WalletContextType | undefined>(undefined);
 
+interface Eip6963Detail {
+  info: { uuid: string; name: string; icon: string; rdns: string };
+  provider: any;
+}
+const discovered = new Map<string, Eip6963Detail>();
+if (typeof window !== 'undefined') {
+  window.addEventListener('eip6963:announceProvider', (event: Event) => {
+    const detail = (event as CustomEvent<Eip6963Detail>).detail;
+    if (detail?.info?.rdns) discovered.set(detail.info.rdns, detail);
+  });
+  window.dispatchEvent(new Event('eip6963:requestProvider'));
+}
+
+/**
+ * Pick an injected EIP-1193 provider. Prefers wallets announced via EIP-6963 (MetaMask first),
+ * then falls back to window.ethereum (unwrapping multi-wallet shims).
+ */
+function getInjectedProvider(): any | null {
+  if (typeof window === 'undefined') return null;
+  if (discovered.size > 0) {
+    const mm = discovered.get('io.metamask') ?? discovered.get('io.metamask.flask');
+    const first = mm ?? Array.from(discovered.values())[0];
+    if (first) return first.provider;
+  }
+  const eth = (window as any).ethereum;
+  if (!eth) return null;
+  if (Array.isArray(eth.providers) && eth.providers.length > 0) {
+    return eth.providers.find((p: any) => p.isMetaMask) ?? eth.providers[0];
+  }
+  return eth;
+}
+
+function describeWalletError(error: any): string {
+  const code = error?.code ?? error?.info?.error?.code;
+  if (code === 4001 || error?.code === 'ACTION_REJECTED') return 'Connection request was rejected in the wallet.';
+  if (code === -32002) return 'A connection request is already open. Click the wallet extension icon in your browser toolbar to approve it.';
+  if (code === 4100) return 'The wallet is locked. Unlock it and try again.';
+  return error?.shortMessage || error?.message || 'Failed to connect wallet';
+}
+
 interface Web3WalletProviderProps {
   children: ReactNode;
 }
 
 export const Web3WalletProvider: React.FC<Web3WalletProviderProps> = ({ children }) => {
+  const { addNotification } = useApp();
   const [walletState, setWalletState] = useState<WalletState>({
     isConnected: false,
     address: null,
@@ -48,15 +90,16 @@ export const Web3WalletProvider: React.FC<Web3WalletProviderProps> = ({ children
     setWalletState(prev => ({ ...prev, isConnecting: true, error: null }));
 
     try {
-      // Check if MetaMask is specifically installed
-      if (typeof window === 'undefined' || !(window as any).ethereum) {
-        throw new Error('No EVM wallet detected. Please install MetaMask or another browser wallet.');
+      const ethereum = getInjectedProvider();
+      if (!ethereum) {
+        throw new Error('No browser wallet detected. Install MetaMask (metamask.io), then reload this page.');
       }
 
-      const ethereum = (window as any).ethereum;
-      
-      // Request account access
-      await ethereum.request({ method: 'eth_requestAccounts' });
+      // Request account access (opens the wallet popup)
+      const accounts: string[] = await ethereum.request({ method: 'eth_requestAccounts' });
+      if (!accounts || accounts.length === 0) {
+        throw new Error('The wallet returned no accounts. Unlock it and select an account.');
+      }
 
       // Initialize ethers provider
       const ethers = await getEthers();
@@ -81,12 +124,13 @@ export const Web3WalletProvider: React.FC<Web3WalletProviderProps> = ({ children
       });
 
     } catch (error: any) {
-      const errorMessage = error?.message || 'Failed to connect wallet';
+      const errorMessage = describeWalletError(error);
       setWalletState(prev => ({
         ...prev,
         isConnecting: false,
         error: errorMessage
       }));
+      addNotification({ type: 'error', title: 'Wallet connection failed', message: errorMessage });
       console.error('Wallet connection error:', error);
     }
   };
@@ -120,10 +164,10 @@ export const Web3WalletProvider: React.FC<Web3WalletProviderProps> = ({ children
   };
 
   const switchChain = async (targetChainId: number): Promise<void> => {
-    if (typeof window === 'undefined' || !(window as any).ethereum) {
-      throw new Error('No EVM wallet available');
+    const ethereum = getInjectedProvider();
+    if (!ethereum) {
+      throw new Error('No browser wallet available');
     }
-    const ethereum = (window as any).ethereum;
     const hexId = `0x${targetChainId.toString(16)}`;
 
     try {
@@ -155,12 +199,12 @@ export const Web3WalletProvider: React.FC<Web3WalletProviderProps> = ({ children
   // Check for existing connection on mount
   useEffect(() => {
     const checkConnection = async () => {
-      if (typeof window === 'undefined' || !(window as any).ethereum) {
+      const ethereum = getInjectedProvider();
+      if (!ethereum) {
         return;
       }
 
       try {
-        const ethereum = (window as any).ethereum;
         const accounts = await ethereum.request({ method: 'eth_accounts' });
         
         if (accounts && accounts.length > 0) {
@@ -193,11 +237,10 @@ export const Web3WalletProvider: React.FC<Web3WalletProviderProps> = ({ children
 
   // Listen for account and chain changes
   useEffect(() => {
-    if (typeof window === 'undefined' || !(window as any).ethereum) {
+    const ethereum = getInjectedProvider();
+    if (!ethereum || typeof ethereum.on !== 'function') {
       return;
     }
-
-    const ethereum = (window as any).ethereum;
 
     const handleAccountsChanged = async (accounts: string[]) => {
       if (accounts.length === 0) {
