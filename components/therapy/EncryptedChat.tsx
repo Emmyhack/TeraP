@@ -303,7 +303,7 @@ export const EncryptedChat: React.FC<EncryptedChatProps> = ({
 
       {/* Voice Call Area */}
       {isCallActive && (
-        <div className="bg-gradient-to-r from-primary-50 to-primary-50 p-6 border-b">
+        <div className="bg-primary-50 p-6 border-b">
           <div className="flex items-center justify-center space-x-4">
             <div className="flex items-center space-x-3">
               <div className="w-4 h-4 bg-green-500 rounded-full animate-pulse" />

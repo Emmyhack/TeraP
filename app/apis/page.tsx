@@ -36,7 +36,7 @@ const ROUTES = [
 
 export default function APIs() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary-50 to-accent-50">
+    <div className="min-h-screen bg-primary-50">
       <div className="max-w-6xl mx-auto px-4 py-8">
         <Link href="/" className="inline-flex items-center space-x-2 text-primary-600 hover:text-primary-700 mb-8">
           <ArrowLeft className="h-4 w-4" />

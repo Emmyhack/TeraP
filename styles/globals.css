@@ -14,11 +14,11 @@
 
 @layer components {
   .btn-primary {
-    @apply bg-gradient-to-r from-primary-500 to-accent-500 hover:from-primary-600 hover:to-accent-600 text-white font-semibold px-6 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 active:scale-95;
+    @apply bg-primary-500 hover:bg-primary-600 text-white font-semibold px-6 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 active:scale-95;
   }
   
   .btn-secondary {
-    @apply bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700 text-white font-semibold px-6 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 active:scale-95;
+    @apply bg-gray-500 hover:bg-gray-600 text-white font-semibold px-6 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 active:scale-95;
   }
   
   .btn-outline {
@@ -26,15 +26,15 @@
   }
   
   .btn-success {
-    @apply bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white font-semibold px-6 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 active:scale-95;
+    @apply bg-green-500 hover:bg-green-600 text-white font-semibold px-6 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 active:scale-95;
   }
   
   .btn-warning {
-    @apply bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white font-semibold px-6 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 active:scale-95;
+    @apply bg-yellow-500 hover:bg-yellow-600 text-white font-semibold px-6 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 active:scale-95;
   }
   
   .btn-danger {
-    @apply bg-gradient-to-r from-red-500 to-accent-500 hover:from-red-600 hover:to-accent-600 text-white font-semibold px-6 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 active:scale-95;
+    @apply bg-red-500 hover:bg-red-600 text-white font-semibold px-6 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 active:scale-95;
   }
   
   .btn-ghost {
@@ -62,11 +62,11 @@
   }
   
   .wellness-gradient {
-    background: linear-gradient(135deg, theme('colors.wellness.calm'), theme('colors.wellness.peace'));
+    background-color: theme('colors.wellness.calm');
   }
-  
+
   .growth-gradient {
-    background: linear-gradient(135deg, theme('colors.wellness.growth'), theme('colors.accent.400'));
+    background-color: theme('colors.wellness.growth');
   }
 }
 
@@ -103,30 +103,25 @@
   background-color: rgb(31 41 55);
 }
 .dark .bg-primary-100,
-.dark .bg-accent-100 {
-  background-color: rgb(6 78 59 / 0.5);
+.dark .bg-accent-100,
+.dark .bg-primary-200,
+.dark .bg-accent-200,
+.dark .bg-green-100,
+.dark .bg-emerald-100,
+.dark .bg-green-50,
+.dark .bg-emerald-50 {
+  background-color: rgb(6 78 59 / 0.45);
 }
-.dark .from-white,
-.dark .from-primary-50,
-.dark .from-accent-50,
-.dark .from-neutral-50,
-.dark .from-gray-50 {
-  --tw-gradient-from: rgb(17 24 39) var(--tw-gradient-from-position);
-  --tw-gradient-to: rgb(17 24 39 / 0) var(--tw-gradient-to-position);
-  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+.dark .bg-gray-200,
+.dark .bg-neutral-300,
+.dark .bg-neutral-400 {
+  background-color: rgb(55 65 81);
 }
-.dark .via-white,
-.dark .via-primary-50,
-.dark .via-accent-50 {
-  --tw-gradient-to: rgb(3 7 18 / 0) var(--tw-gradient-to-position);
-  --tw-gradient-stops: var(--tw-gradient-from), rgb(3 7 18) var(--tw-gradient-via-position), var(--tw-gradient-to);
-}
-.dark .to-white,
-.dark .to-primary-50,
-.dark .to-accent-50,
-.dark .to-primary-100,
-.dark .to-accent-100 {
-  --tw-gradient-to: rgb(2 44 34) var(--tw-gradient-to-position);
+.dark .bg-primary-500,
+.dark .bg-primary-600,
+.dark .bg-accent-500,
+.dark .bg-accent-600 {
+  color: #fff;
 }
 .dark .text-gray-900,
 .dark .text-gray-800,
@@ -192,7 +187,6 @@
 }
 .dark .bg-amber-50 { background-color: rgb(69 26 3 / 0.5); }
 .dark .bg-red-50 { background-color: rgb(69 10 10 / 0.5); }
-.dark .bg-green-50, .dark .bg-emerald-50 { background-color: rgb(2 44 34 / 0.6); }
 .dark .bg-yellow-50 { background-color: rgb(66 32 6 / 0.5); }
 
 /* Custom scrollbar */

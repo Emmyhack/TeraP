@@ -18,7 +18,7 @@ export function MultiWalletConnection() {
         type="button"
         onClick={() => void connectWallet()}
         disabled={isConnecting}
-        className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-primary-500 to-accent-500 px-4 py-2 text-sm font-medium text-white shadow-md transition-all hover:from-primary-600 hover:to-accent-600 disabled:opacity-60"
+        className="flex items-center gap-2 rounded-xl bg-primary-500 px-4 py-2 text-sm font-medium text-white shadow-md transition-all hover:bg-primary-600 disabled:opacity-60"
       >
         <Wallet className="h-4 w-4" />
         {isConnecting ? 'Connecting...' : 'Connect Wallet'}

@@ -251,7 +251,7 @@ const ZKTherapistProfile: React.FC = () => {
             <div className="flex items-start justify-between">
               <div className="flex items-center space-x-4">
                 <div className="relative">
-                  <div className="w-20 h-20 bg-gradient-to-br from-green-500 to-teal-600 rounded-full flex items-center justify-center text-white font-bold text-2xl">
+                  <div className="w-20 h-20 bg-green-500 rounded-full flex items-center justify-center text-white font-bold text-2xl">
                     {profileData.basicInfo.displayName.substring(0, 2).toUpperCase() || 'DR'}
                   </div>
                   {verificationStatus === 'verified' && (

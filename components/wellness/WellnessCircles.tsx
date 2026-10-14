@@ -458,7 +458,7 @@ function Empty({ title, body }: { title: string; body: string }) {
 
 function Notice({ icon, title, children }: { icon: React.ReactNode; title: string; children: React.ReactNode }) {
   return (
-    <div className="min-h-[40vh] bg-gradient-to-br from-primary-50 to-accent-50 flex items-center justify-center p-6">
+    <div className="min-h-[40vh] bg-primary-50 flex items-center justify-center p-6">
       <div className="bg-white rounded-xl shadow-lg p-8 max-w-lg text-center">
         <div className="flex justify-center mb-3">{icon}</div>
         <h2 className="text-xl font-bold text-neutral-800 mb-2">{title}</h2>

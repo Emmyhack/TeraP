@@ -46,11 +46,11 @@ const Navigation: React.FC = () => {
 
   const Brand = (
     <Link href="/" className="flex items-center space-x-3">
-      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-primary-500 via-accent-500 to-accent-500 shadow-lg">
+      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary-500 shadow-lg">
         <span className="text-lg font-bold text-white">T</span>
       </div>
       <div className="leading-tight">
-        <span className="bg-gradient-to-r from-primary-600 to-accent-600 bg-clip-text text-xl font-bold text-transparent">TeraP</span>
+        <span className="text-primary-600 text-xl font-bold">TeraP</span>
         <div className="text-xs font-medium text-gray-500">Universal</div>
       </div>
     </Link>
@@ -59,7 +59,7 @@ const Navigation: React.FC = () => {
   const Account = ({ stacked = false }: { stacked?: boolean }) => (
     <div className={stacked ? 'space-y-2' : 'flex items-center space-x-3'}>
       {isAuthenticated && (
-        <div className="flex items-center justify-between space-x-2 rounded-xl border border-primary-200 bg-gradient-to-r from-primary-50 to-accent-50 px-3 py-2">
+        <div className="flex items-center justify-between space-x-2 rounded-xl border border-primary-200 bg-primary-50 px-3 py-2">
           <div className="flex items-center space-x-2">
             <div className="h-2 w-2 animate-pulse rounded-full bg-primary-500" />
             <span className="text-sm font-medium text-primary-700">{currentSession?.profile.displayName}</span>
@@ -70,7 +70,7 @@ const Navigation: React.FC = () => {
         </div>
       )}
       {isConnected ? (
-        <div className="flex items-center justify-between space-x-2 rounded-xl border border-green-200 bg-gradient-to-r from-green-50 to-emerald-50 px-3 py-2">
+        <div className="flex items-center justify-between space-x-2 rounded-xl border border-green-200 bg-green-50 px-3 py-2">
           <div className="flex items-center space-x-2">
             <div className="h-2 w-2 animate-pulse rounded-full bg-green-500" />
             <span className="text-sm font-medium text-green-700">{formatAddress(address)}</span>
@@ -98,7 +98,7 @@ const Navigation: React.FC = () => {
                 href={href}
                 className={`flex items-center space-x-2 rounded-xl px-3 py-2 text-sm font-medium transition-colors ${
                   isActive(href)
-                    ? 'bg-gradient-to-r from-primary-500 to-accent-500 text-white shadow-md'
+                    ? 'bg-primary-500 text-white shadow-md'
                     : 'text-gray-600 hover:bg-primary-50 hover:text-primary-600'
                 }`}
               >
@@ -137,7 +137,7 @@ const Navigation: React.FC = () => {
                   onClick={() => setIsMobileMenuOpen(false)}
                   className={`flex items-center space-x-3 rounded-xl px-4 py-3 text-left font-medium ${
                     isActive(href)
-                      ? 'bg-gradient-to-r from-primary-500 to-accent-500 text-white shadow-md'
+                      ? 'bg-primary-500 text-white shadow-md'
                       : 'text-gray-600 hover:bg-primary-50 hover:text-primary-600'
                   }`}
                 >

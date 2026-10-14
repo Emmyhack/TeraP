@@ -44,7 +44,7 @@ function LiveSessionContent() {
   };
 
   const gate = (title: string, message: string, action?: React.ReactNode) => (
-    <div className="min-h-screen bg-gradient-to-br from-primary-50 to-accent-50 flex items-center justify-center">
+    <div className="min-h-screen bg-primary-50 flex items-center justify-center">
       <div className="max-w-md w-full bg-white rounded-xl shadow-lg p-8 text-center">
         <AlertCircle className="h-16 w-16 text-red-500 mx-auto mb-6" />
         <h2 className="text-2xl font-bold text-neutral-800 mb-4">{title}</h2>
@@ -106,7 +106,7 @@ export default function LiveSessionPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-gradient-to-br from-primary-50 to-accent-50 flex items-center justify-center">
+        <div className="min-h-screen bg-primary-50 flex items-center justify-center">
           <div className="text-center p-8">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto mb-4"></div>
             <h2 className="text-2xl font-bold text-neutral-800 mb-4">Loading Session</h2>

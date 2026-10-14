@@ -39,12 +39,12 @@ export default function ClientPage() {
     <AppShell>
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
           <div className="mb-12">
-            <div className="w-20 h-20 bg-gradient-to-br from-primary-500 to-accent-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
+            <div className="w-20 h-20 bg-primary-500 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
               <Heart className="w-10 h-10 text-white" />
             </div>
             <h1 className="text-5xl font-display font-bold text-neutral-800 mb-6">
               Your Wellness Journey
-              <span className="block text-3xl bg-gradient-to-r from-primary-500 to-accent-600 bg-clip-text text-transparent mt-2">Starts Here</span>
+              <span className="block text-3xl text-primary-500 mt-2">Starts Here</span>
             </h1>
             <p className="text-xl text-neutral-600 mb-8 max-w-2xl mx-auto leading-relaxed">
               Access your personalized mental health dashboard with complete privacy and professional support
@@ -69,7 +69,7 @@ export default function ClientPage() {
             </div>
           </div>
 
-          <div className="bg-gradient-to-br from-primary-500 via-accent-600 to-accent-500 rounded-3xl p-8 lg:p-12 text-white shadow-2xl max-w-2xl mx-auto">{cta}</div>
+          <div className="bg-primary-500 rounded-3xl p-8 lg:p-12 text-white shadow-2xl max-w-2xl mx-auto">{cta}</div>
         </div>
       </AppShell>
   );
@@ -127,7 +127,7 @@ export default function ClientPage() {
           {/* Header Section */}
           <div className="mb-10">
             <div className="flex items-center space-x-4 mb-6">
-              <div className="w-12 h-12 bg-gradient-to-br from-primary-500 to-accent-600 rounded-2xl flex items-center justify-center shadow-lg">
+              <div className="w-12 h-12 bg-primary-500 rounded-2xl flex items-center justify-center shadow-lg">
                 <Heart className="w-6 h-6 text-white" />
               </div>
               <div>
@@ -135,7 +135,7 @@ export default function ClientPage() {
                 <p className="text-lg text-neutral-600 mt-1">Your personalized mental health dashboard</p>
               </div>
             </div>
-            <div className="bg-gradient-to-r from-primary-500/10 to-accent-600/10 rounded-2xl p-4 border border-primary-200/50">
+            <div className="bg-primary-500/10 rounded-2xl p-4 border border-primary-200/50">
               <p className="text-neutral-700">
                 Track your progress, manage sessions, and connect with your wellness community with complete privacy and professional support.
               </p>
@@ -144,9 +144,9 @@ export default function ClientPage() {
 
           {/* Status Cards (live from TeraPCore) */}
           <div className="grid lg:grid-cols-4 gap-6 mb-10">
-            <div className="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-2xl p-6 border border-emerald-200/50 shadow-lg">
+            <div className="bg-emerald-50 rounded-2xl p-6 border border-emerald-200/50 shadow-lg">
               <div className="flex items-center space-x-3 mb-4">
-                <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center">
+                <div className="w-10 h-10 bg-emerald-500 rounded-xl flex items-center justify-center">
                   <Shield className="w-5 h-5 text-white" />
                 </div>
                 <div>
@@ -162,9 +162,9 @@ export default function ClientPage() {
               </div>
             </div>
 
-            <div className="bg-gradient-to-br from-primary-50 to-accent-50 rounded-2xl p-6 border border-primary-200/50 shadow-lg">
+            <div className="bg-primary-50 rounded-2xl p-6 border border-primary-200/50 shadow-lg">
               <div className="flex items-center space-x-3 mb-4">
-                <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-accent-600 rounded-xl flex items-center justify-center">
+                <div className="w-10 h-10 bg-primary-500 rounded-xl flex items-center justify-center">
                   <Calendar className="w-5 h-5 text-white" />
                 </div>
                 <div>
@@ -175,9 +175,9 @@ export default function ClientPage() {
               <p className="text-xs text-neutral-600">Booked • {completed} completed</p>
             </div>
 
-            <div className="bg-gradient-to-br from-accent-50 to-orange-50 rounded-2xl p-6 border border-accent-200/50 shadow-lg">
+            <div className="bg-accent-50 rounded-2xl p-6 border border-accent-200/50 shadow-lg">
               <div className="flex items-center space-x-3 mb-4">
-                <div className="w-10 h-10 bg-gradient-to-br from-accent-500 to-orange-500 rounded-xl flex items-center justify-center">
+                <div className="w-10 h-10 bg-accent-500 rounded-xl flex items-center justify-center">
                   <Coins className="w-5 h-5 text-white" />
                 </div>
                 <div>
@@ -188,9 +188,9 @@ export default function ClientPage() {
               <p className="text-xs text-neutral-600">Token balance</p>
             </div>
 
-            <div className="bg-gradient-to-br from-accent-50 to-primary-50 rounded-2xl p-6 border border-accent-200/50 shadow-lg">
+            <div className="bg-accent-50 rounded-2xl p-6 border border-accent-200/50 shadow-lg">
               <div className="flex items-center space-x-3 mb-4">
-                <div className="w-10 h-10 bg-gradient-to-br from-accent-500 to-primary-600 rounded-xl flex items-center justify-center">
+                <div className="w-10 h-10 bg-accent-500 rounded-xl flex items-center justify-center">
                   <Users className="w-5 h-5 text-white" />
                 </div>
                 <div>
@@ -209,10 +209,10 @@ export default function ClientPage() {
             <div className="grid md:grid-cols-3 gap-4">
               <button
                 onClick={() => router.push('/client/book-session')}
-                className="group bg-gradient-to-br from-primary-50 to-accent-50 hover:from-primary-100 hover:to-accent-100 rounded-2xl p-6 border border-primary-200/50 hover:border-primary-300/50 transition-all duration-300 shadow-lg hover:shadow-xl text-left"
+                className="group bg-primary-50 hover:bg-primary-100 rounded-2xl p-6 border border-primary-200/50 hover:border-primary-300/50 transition-all duration-300 shadow-lg hover:shadow-xl text-left"
               >
                 <div className="flex items-center space-x-4">
-                  <div className="w-12 h-12 bg-gradient-to-br from-primary-500 to-accent-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <div className="w-12 h-12 bg-primary-500 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
                     <Calendar className="w-6 h-6 text-white" />
                   </div>
                   <div>
@@ -224,10 +224,10 @@ export default function ClientPage() {
 
               <button
                 onClick={() => router.push('/wellness')}
-                className="group bg-gradient-to-br from-emerald-50 to-teal-50 hover:from-emerald-100 hover:to-teal-100 rounded-2xl p-6 border border-emerald-200/50 hover:border-emerald-300/50 transition-all duration-300 shadow-lg hover:shadow-xl text-left"
+                className="group bg-emerald-50 hover:bg-emerald-100 rounded-2xl p-6 border border-emerald-200/50 hover:border-emerald-300/50 transition-all duration-300 shadow-lg hover:shadow-xl text-left"
               >
                 <div className="flex items-center space-x-4">
-                  <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <div className="w-12 h-12 bg-emerald-500 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
                     <Users className="w-6 h-6 text-white" />
                   </div>
                   <div>
@@ -239,10 +239,10 @@ export default function ClientPage() {
 
               <button
                 onClick={() => router.push('/dao')}
-                className="group bg-gradient-to-br from-accent-50 to-primary-50 hover:from-accent-100 hover:to-primary-100 rounded-2xl p-6 border border-accent-200/50 hover:border-accent-300/50 transition-all duration-300 shadow-lg hover:shadow-xl text-left"
+                className="group bg-accent-50 hover:bg-accent-100 rounded-2xl p-6 border border-accent-200/50 hover:border-accent-300/50 transition-all duration-300 shadow-lg hover:shadow-xl text-left"
               >
                 <div className="flex items-center space-x-4">
-                  <div className="w-12 h-12 bg-gradient-to-br from-accent-500 to-primary-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <div className="w-12 h-12 bg-accent-500 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
                     <Award className="w-6 h-6 text-white" />
                   </div>
                   <div>

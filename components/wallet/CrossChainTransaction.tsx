@@ -168,7 +168,7 @@ export function CrossChainTransaction({ therapist: initialTherapist = '', durati
             <button
               onClick={sendDepositAndCall}
               disabled={sending || !encoded.payload || !ADDRESSES.TeraPCore}
-              className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-primary-600 to-accent-600 text-white rounded-lg disabled:opacity-50"
+              className="flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-lg disabled:opacity-50"
             >
               {sending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
               {sending ? 'Confirm in wallet...' : 'depositAndCall'}

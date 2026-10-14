@@ -15,7 +15,7 @@ interface AppShellProps {
 /** Shared page frame: navigation, status banner, centered content column, footer, toasts. */
 export default function AppShell({ children, fullBleed = false }: AppShellProps) {
   return (
-    <div className="flex min-h-screen flex-col bg-gradient-to-br from-primary-50 via-white to-accent-50 text-neutral-800 dark:from-gray-950 dark:via-gray-900 dark:to-primary-950 dark:text-gray-100">
+    <div className="flex min-h-screen flex-col bg-white text-neutral-800 dark:bg-gray-950 dark:text-gray-100">
       <Navigation />
       <div className="px-4 sm:px-6">
         <ContractStatusBanner />

@@ -138,7 +138,7 @@ export default function TherapistRegisterPage() {
   if (!isConnected) {
     return shell(
       <>
-        <div className="w-16 h-16 bg-gradient-to-br from-primary-500 to-accent-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
+        <div className="w-16 h-16 bg-primary-500 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
           <Shield className="w-8 h-8 text-white" />
         </div>
         <h1 className="text-3xl font-display font-bold text-neutral-800 mb-4">Wallet Connection Required</h1>
@@ -146,7 +146,7 @@ export default function TherapistRegisterPage() {
         <button
           onClick={connectWallet}
           disabled={isConnecting}
-          className="bg-gradient-to-r from-primary-500 to-accent-600 text-white font-semibold px-8 py-4 rounded-xl hover:from-primary-600 hover:to-accent-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 flex items-center space-x-2 mx-auto disabled:opacity-50"
+          className="bg-primary-500 text-white font-semibold px-8 py-4 rounded-xl hover:bg-primary-600 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 flex items-center space-x-2 mx-auto disabled:opacity-50"
         >
           <span>{isConnecting ? 'Connecting...' : 'Connect Wallet'}</span>
           <Heart className="w-5 h-5" />
@@ -212,7 +212,7 @@ export default function TherapistRegisterPage() {
           </button>
 
           <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-2xl overflow-hidden border border-white/50">
-            <div className="bg-gradient-to-br from-primary-500 via-accent-600 to-accent-500 px-8 py-12 text-center relative overflow-hidden">
+            <div className="bg-primary-500 px-8 py-12 text-center relative overflow-hidden">
               <div className="absolute inset-0 opacity-10">
                 <div className="absolute top-4 left-8 w-16 h-16 border border-white/30 rounded-full"></div>
                 <div className="absolute bottom-4 right-8 w-20 h-20 border border-white/20 rounded-full"></div>
