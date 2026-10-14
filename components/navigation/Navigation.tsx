@@ -86,7 +86,7 @@ const Navigation: React.FC = () => {
   );
 
   return (
-    <header className="sticky top-0 z-50 px-4 pt-4 sm:px-6">
+    <header className="sticky top-0 z-50 bg-white px-4 pb-2 pt-4 dark:bg-gray-950 sm:px-6">
       <nav className="rounded-2xl border border-gray-200/60 bg-white/95 shadow-lg backdrop-blur-sm dark:border-gray-700 dark:bg-gray-900/95">
         {/* Desktop */}
         <div className="hidden items-center gap-6 px-4 py-3 lg:flex">
