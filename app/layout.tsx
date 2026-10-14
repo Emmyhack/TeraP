@@ -28,7 +28,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className="scroll-smooth">
-      <body className="font-sans antialiased bg-gray-50 dark:bg-gray-900 min-h-screen">
+      <body className="min-h-screen bg-primary-50 font-sans text-neutral-800 antialiased">
         <AppProvider>
           <div id="root" className="relative">
             {children}

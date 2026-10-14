@@ -1,10 +1,9 @@
 'use client';
 
+import AppShell from '@/components/layout/AppShell';
 import React from 'react';
 import { useRouter } from 'next/navigation';
 import { Calendar, Heart, Shield, ArrowLeft, Clock, AlertTriangle } from 'lucide-react';
-import Navigation from '../../../components/navigation/Navigation';
-import Footer from '../../../components/ui/Footer';
 import SessionBooking from '../../../components/booking/SessionBooking';
 import { useWeb3Wallet } from '@/components/wallet/Web3WalletProvider';
 import { useTeraP } from '@/hooks/useTeraP';
@@ -14,20 +13,9 @@ export default function BookSessionPage() {
   const { connectWallet, isConnecting } = useWeb3Wallet();
   const { isConnected, isConfigured, wrongNetwork, ensureNetwork, chain } = useTeraP();
 
-  const handlePageChange = (page: string) => {
-    if (page === 'home') router.push('/');
-    else if (page === 'client-dashboard') router.push('/client');
-    else if (page === 'wellness-circles') router.push('/wellness');
-    else if (page === 'dao-governance') router.push('/dao');
-    else if (page === 'therapist-dashboard') router.push('/therapist');
-    else if (page === 'book-session') router.push('/client/book-session');
-    else if (page === 'subscription') router.push('/client/subscription');
-  };
 
   const hero = (cta: React.ReactNode) => (
-    <div className="min-h-screen bg-gradient-to-br from-primary-50 via-purple-50 to-accent-50">
-      <Navigation currentPage="book-session" onPageChange={handlePageChange} />
-      <main className="pt-20">
+    <AppShell>
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
           <div className="mb-12">
             <div className="w-20 h-20 bg-gradient-to-br from-primary-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
@@ -62,9 +50,7 @@ export default function BookSessionPage() {
 
           <div className="bg-gradient-to-br from-primary-500 via-purple-600 to-accent-500 rounded-3xl p-8 lg:p-12 text-white shadow-2xl max-w-2xl mx-auto">{cta}</div>
         </div>
-      </main>
-      <Footer />
-    </div>
+      </AppShell>
   );
 
   if (!isConfigured) {
@@ -111,9 +97,7 @@ export default function BookSessionPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-neutral-50 via-primary-50/30 to-purple-50/30">
-      <Navigation currentPage="book-session" onPageChange={handlePageChange} />
-      <main className="pt-20">
+    <AppShell>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="mb-10">
             <button onClick={() => router.push('/client')} className="flex items-center space-x-2 text-neutral-600 hover:text-neutral-800 mb-6 transition-colors">
@@ -143,8 +127,6 @@ export default function BookSessionPage() {
             <SessionBooking onNavigateToSubscription={() => router.push('/client/subscription')} />
           </div>
         </div>
-      </main>
-      <Footer />
-    </div>
+      </AppShell>
   );
 }

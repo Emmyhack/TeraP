@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import AppShell from '@/components/layout/AppShell';
 import { useRouter } from 'next/navigation';
 import { ethers } from 'ethers';
 import { AlertCircle, Loader2 } from 'lucide-react';
@@ -136,7 +137,8 @@ export default function CreateProposalPage() {
 
   if (!govConfigured || !isConnected) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <AppShell>
+      <div className="flex items-center justify-center py-16">
         <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8 text-center">
           <h1 className="text-2xl font-bold text-gray-900 mb-4">{!govConfigured ? 'Governance not configured' : 'Connect Wallet Required'}</h1>
           <p className="text-gray-600 mb-6">
@@ -148,11 +150,12 @@ export default function CreateProposalPage() {
           </div>
         </div>
       </div>
+      </AppShell>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <AppShell>
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="bg-white rounded-lg shadow-lg overflow-hidden">
           <div className="bg-indigo-600 px-8 py-6">
@@ -295,7 +298,7 @@ export default function CreateProposalPage() {
           </form>
         </div>
       </div>
-    </div>
+    </AppShell>
   );
 }
 

@@ -1,10 +1,9 @@
 'use client';
 
+import AppShell from '@/components/layout/AppShell';
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { AlertCircle, Loader2 } from 'lucide-react';
-import Navigation from '../../../components/navigation/Navigation';
-import Footer from '../../../components/ui/Footer';
 import { useApp } from '../../../stores/AppProvider';
 import { useTeraP } from '@/hooks/useTeraP';
 import { useWeb3Wallet } from '@/components/wallet/Web3WalletProvider';
@@ -21,14 +20,6 @@ export default function CreateWellnessCirclePage() {
   const [formData, setFormData] = useState({ name: '', description: '', entryStake: '0' });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handlePageChange = (page: string) => {
-    if (page === 'home') router.push('/');
-    else if (page === 'client-dashboard') router.push('/client');
-    else if (page === 'wellness-circles') router.push('/wellness');
-    else if (page === 'dao-governance') router.push('/dao');
-    else if (page === 'therapist-dashboard') router.push('/therapist');
-    else if (page === 'book-session') router.push('/client/book-session');
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -73,20 +64,14 @@ export default function CreateWellnessCirclePage() {
 
   if (gate) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-primary-50 to-accent-50">
-        <Navigation currentPage="wellness-circles" onPageChange={handlePageChange} />
-        <main className="pt-20">
+      <AppShell>
           <div className="max-w-md mx-auto px-4 sm:px-6 lg:px-8 py-12">{gate}</div>
-        </main>
-        <Footer />
-      </div>
+        </AppShell>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary-50 to-accent-50">
-      <Navigation currentPage="wellness-circles" onPageChange={handlePageChange} />
-      <main className="pt-20">
+    <AppShell>
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="card overflow-hidden p-0">
             {/* Header */}
@@ -184,9 +169,7 @@ export default function CreateWellnessCirclePage() {
             </form>
           </div>
         </div>
-      </main>
-      <Footer />
-    </div>
+      </AppShell>
   );
 }
 

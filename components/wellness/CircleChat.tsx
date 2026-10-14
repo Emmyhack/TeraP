@@ -155,7 +155,7 @@ const CircleChat: React.FC<CircleChatProps> = ({ circle, onBack }) => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary-50 to-accent-50">
+    <div className="w-full">
       {/* Header */}
       <div className="bg-white shadow-sm border-b p-4">
         <div className="max-w-4xl mx-auto flex items-center justify-between">

@@ -1,11 +1,13 @@
 'use client';
 
 import React from 'react';
+import { useRouter } from 'next/navigation';
 import { useWeb3Wallet } from '@/components/wallet/Web3WalletProvider';
 import { useContractQuery, useTeraP } from '@/hooks/useTeraP';
 import { Heart, Brain, ArrowRight, Shield, Globe, Users, MessageCircle, Zap, Lock, Sparkles, Activity, UserCheck } from 'lucide-react';
 
 export default function Hero() {
+  const router = useRouter();
   const { isConnected, connectWallet } = useWeb3Wallet();
   const { contracts, isConfigured } = useTeraP();
   const platform = useContractQuery(() => contracts.getPlatformStats(), [contracts], { enabled: isConfigured });
@@ -19,23 +21,8 @@ export default function Hero() {
     }
   };
 
-  const handleExplore = () => {
-    // Navigate to book session page
-    window.location.href = '#book-session';
-    setTimeout(() => {
-      const event = new CustomEvent('navigate', { detail: 'book-session' });
-      window.dispatchEvent(event);
-    }, 100);
-  };
-
-  const handleLearnMore = () => {
-    // Navigate to resources page
-    window.location.href = '#resources';
-    setTimeout(() => {
-      const event = new CustomEvent('navigate', { detail: 'resources' });
-      window.dispatchEvent(event);
-    }, 100);
-  };
+  const handleExplore = () => router.push('/client/book-session');
+  const handleLearnMore = () => router.push('/resources');
 
   return (
     <section className="relative min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 overflow-hidden">

@@ -1,12 +1,11 @@
 'use client';
 
+import AppShell from '@/components/layout/AppShell';
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ethers } from 'ethers';
 import { Heart, Shield, Award, ArrowLeft, CheckCircle, AlertTriangle, ExternalLink, Hourglass } from 'lucide-react';
-import Navigation from '../../../components/navigation/Navigation';
-import Footer from '../../../components/ui/Footer';
 import { useApp } from '../../../stores/AppProvider';
 import { useWeb3Wallet } from '@/components/wallet/Web3WalletProvider';
 import { useContractQuery, useTeraP } from '@/hooks/useTeraP';
@@ -19,14 +18,6 @@ export default function TherapistRegisterPage() {
   const { connectWallet, isConnecting } = useWeb3Wallet();
   const { contracts, address, isConnected, isConfigured, wrongNetwork, canWrite, ensureNetwork, chain } = useTeraP();
 
-  const handlePageChange = (page: string) => {
-    if (page === 'home') router.push('/');
-    else if (page === 'client-dashboard') router.push('/client');
-    else if (page === 'wellness-circles') router.push('/wellness');
-    else if (page === 'dao-governance') router.push('/dao');
-    else if (page === 'therapist-dashboard') router.push('/therapist');
-    else if (page === 'book-session') router.push('/client/book-session');
-  };
 
   const [formData, setFormData] = useState({
     anonymousId: '',
@@ -127,15 +118,11 @@ export default function TherapistRegisterPage() {
   };
 
   const shell = (content: React.ReactNode) => (
-    <div className="min-h-screen bg-gradient-to-br from-primary-50 via-purple-50 to-accent-50">
-      <Navigation currentPage="therapist-dashboard" onPageChange={handlePageChange} />
-      <main className="pt-20">
+    <AppShell>
         <div className="max-w-md mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
           <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl p-8 border border-white/50">{content}</div>
         </div>
-      </main>
-      <Footer />
-    </div>
+      </AppShell>
   );
 
   if (!isConfigured) {
@@ -217,9 +204,7 @@ export default function TherapistRegisterPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-neutral-50 via-primary-50/30 to-purple-50/30">
-      <Navigation currentPage="therapist-dashboard" onPageChange={handlePageChange} />
-      <main className="pt-20">
+    <AppShell>
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <button onClick={() => router.back()} className="flex items-center space-x-2 text-neutral-600 hover:text-neutral-800 mb-8 transition-colors">
             <ArrowLeft className="w-4 h-4" />
@@ -425,8 +410,6 @@ export default function TherapistRegisterPage() {
             </form>
           </div>
         </div>
-      </main>
-      <Footer />
-    </div>
+      </AppShell>
   );
 }

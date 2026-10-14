@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import AppShell from '@/components/layout/AppShell';
 import { useRouter } from 'next/navigation';
 import { SubscriptionPlanSelector } from '@/components/subscription/SubscriptionPlans';
 import { useSubscription } from '@/hooks/useSubscription';
@@ -13,7 +14,7 @@ const ClientSubscriptionPage: React.FC = () => {
   const currentTier = subscription ? tiers.find((t) => t.tierId === subscription.tierId) : undefined;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-neutral-50 via-primary-50/30 to-purple-50/30">
+    <AppShell>
       {/* Professional Header */}
       <div className="bg-gradient-to-r from-white/90 to-white/70 backdrop-blur-sm border-b border-white/50 shadow-lg">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
@@ -98,7 +99,7 @@ const ClientSubscriptionPage: React.FC = () => {
           />
         </div>
       </div>
-    </div>
+    </AppShell>
   );
 };
 

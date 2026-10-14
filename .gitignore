@@ -43,3 +43,4 @@ Thumbs.db
 *.tmp
 *.temp
 tsconfig.tsbuildinfo
+deployments/31337.json

@@ -177,7 +177,7 @@ const ZKIdentityManagement: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+    <div className="w-full">
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-2xl mx-auto">
           

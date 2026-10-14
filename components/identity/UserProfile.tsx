@@ -83,7 +83,7 @@ const UserProfile: React.FC = () => {
 
   if (!currentSession?.profile) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex items-center justify-center">
+      <div className="flex items-center justify-center py-16">
         <div className="text-center">
           <Shield className="h-16 w-16 text-gray-400 mx-auto mb-4" />
           <h2 className="text-xl font-semibold text-gray-600 mb-2">No Profile Found</h2>
@@ -97,7 +97,7 @@ const UserProfile: React.FC = () => {
   const isTherapist = profile.role === 'therapist';
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+    <div className="w-full">
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
           

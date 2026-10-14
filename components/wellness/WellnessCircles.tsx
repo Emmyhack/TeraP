@@ -135,7 +135,7 @@ const WellnessCircles: React.FC = () => {
   const writeBlocked = !canWrite && !wrongNetwork;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary-50 to-accent-50 p-6">
+    <div className="w-full">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
