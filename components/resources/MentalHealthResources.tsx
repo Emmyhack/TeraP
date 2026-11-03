@@ -31,8 +31,20 @@ interface WellnessTool {
   instructions: string[];
 }
 
+type ResourceTab = 'guides' | 'contacts' | 'tools';
+
+const resourceTabs: Array<{
+  id: ResourceTab;
+  label: string;
+  icon: typeof BookOpenIcon;
+}> = [
+  { id: 'guides', label: 'Guides', icon: BookOpenIcon },
+  { id: 'contacts', label: 'Contacts', icon: PhoneIcon },
+  { id: 'tools', label: 'Wellness Tools', icon: HeartIcon }
+];
+
 const MentalHealthResources: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'guides' | 'contacts' | 'tools'>('guides');
+  const [activeTab, setActiveTab] = useState<ResourceTab>('guides');
   const [selectedGuide, setSelectedGuide] = useState<Guide | null>(null);
   const [activeTool, setActiveTool] = useState<WellnessTool | null>(null);
   const [toolTimer, setToolTimer] = useState(0);
@@ -222,17 +234,6 @@ Develop coping skills, maintain social connections, and practice self-compassion
     return () => clearInterval(interval);
   }, [isToolActive, activeTool]);
 
-  const startTool = (tool: WellnessTool) => {
-    if (activeTool?.id === tool.id) {
-      setToolTimer(0);
-      setIsToolActive(true);
-    } else {
-      setActiveTool(tool);
-      setToolTimer(0);
-      setIsToolActive(true);
-    }
-  };
-
   const pauseTool = () => {
     setIsToolActive(false);
   };
@@ -267,14 +268,10 @@ Develop coping skills, maintain social connections, and practice self-compassion
 
       {/* Tab Navigation */}
       <div className="flex space-x-1 mb-8 bg-gray-100 p-1 rounded-lg">
-        {[
-          { id: 'guides', label: 'Guides', icon: BookOpenIcon },
-          { id: 'contacts', label: 'Contacts', icon: PhoneIcon },
-          { id: 'tools', label: 'Wellness Tools', icon: HeartIcon }
-        ].map(({ id, label, icon: Icon }) => (
+        {resourceTabs.map(({ id, label, icon: Icon }) => (
           <button
             key={id}
-            onClick={() => setActiveTab(id as any)}
+            onClick={() => setActiveTab(id)}
             className={`flex items-center space-x-2 px-4 py-2 rounded-md font-medium transition-colors ${
               activeTab === id
                 ? 'bg-white text-primary-600 shadow-sm'

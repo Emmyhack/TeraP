@@ -19,6 +19,12 @@ import { useZKIdentity } from './ZKIdentityProvider';
 import { useWeb3Wallet } from '@/components/wallet/Web3WalletProvider';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 
+type CommunicationStyle = 'formal' | 'casual' | 'supportive';
+
+function getErrorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : 'Unknown error';
+}
+
 const UserProfile: React.FC = () => {
   const { currentSession, logout, updateProfile } = useZKIdentity();
   const { address: walletAddress, chainId } = useWeb3Wallet();
@@ -57,9 +63,9 @@ const UserProfile: React.FC = () => {
       setIsEditing(false);
       alert('Profile updated successfully!');
       
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Failed to update profile:', error);
-      alert(`Failed to update profile: ${error.message}`);
+      alert(`Failed to update profile: ${getErrorMessage(error)}`);
     } finally {
       setIsLoading(false);
     }
@@ -251,7 +257,7 @@ const UserProfile: React.FC = () => {
                   {isEditing ? (
                     <select
                       value={editData.communicationStyle}
-                      onChange={(e) => setEditData(prev => ({ ...prev, communicationStyle: e.target.value as any }))}
+                      onChange={(e) => setEditData(prev => ({ ...prev, communicationStyle: e.target.value as CommunicationStyle }))}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                     >
                       <option value="formal">Formal</option>

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useReducer, ReactNode } from 'react';
+import React, { createContext, useCallback, useContext, useMemo, useReducer, ReactNode } from 'react';
 import { Web3WalletProvider } from '@/components/wallet/Web3WalletProvider';
 import { ZKIdentityProvider } from '@/components/identity/ZKIdentityProvider';
 
@@ -9,7 +9,7 @@ export interface AppState {
   user: {
     isTherapist: boolean;
     isVerified: boolean;
-    profile: any | null;
+    profile: unknown | null;
     reputation: number;
     terapBalance: string;
     wellnessCircles: string[];
@@ -44,7 +44,7 @@ interface Notification {
 }
 
 type AppAction = 
-  | { type: 'SET_USER_PROFILE'; payload: any }
+  | { type: 'SET_USER_PROFILE'; payload: unknown }
   | { type: 'SET_THERAPIST_STATUS'; payload: boolean }
   | { type: 'UPDATE_BALANCE'; payload: string }
   | { type: 'SET_LOADING'; payload: boolean }
@@ -199,7 +199,7 @@ function appReducer(state: AppState, action: AppAction): AppState {
 export function AppProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(appReducer, initialState);
   
-  const addNotification = (notification: Omit<Notification, 'id' | 'timestamp'>) => {
+  const addNotification = useCallback((notification: Omit<Notification, 'id' | 'timestamp'>) => {
     const fullNotification: Notification = {
       ...notification,
       id: Math.random().toString(36).substr(2, 9),
@@ -212,30 +212,30 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setTimeout(() => {
       dispatch({ type: 'REMOVE_NOTIFICATION', payload: fullNotification.id });
     }, 5000);
-  };
+  }, []);
   
-  const removeNotification = (id: string) => {
+  const removeNotification = useCallback((id: string) => {
     dispatch({ type: 'REMOVE_NOTIFICATION', payload: id });
-  };
+  }, []);
   
-  const setLoading = (isLoading: boolean) => {
+  const setLoading = useCallback((isLoading: boolean) => {
     dispatch({ type: 'SET_LOADING', payload: isLoading });
-  };
+  }, []);
   
-  const toggleModal = (modal: keyof AppState['ui']['modals'], isOpen?: boolean) => {
+  const toggleModal = useCallback((modal: keyof AppState['ui']['modals'], isOpen?: boolean) => {
     const currentState = state.ui.modals[modal];
     const newState = isOpen !== undefined ? isOpen : !currentState;
     dispatch({ type: 'TOGGLE_MODAL', payload: { modal, isOpen: newState } });
-  };
+  }, [state.ui.modals]);
   
-  const contextValue: AppContextType = {
+  const contextValue = useMemo<AppContextType>(() => ({
     state,
     dispatch,
     addNotification,
     removeNotification,
     setLoading,
     toggleModal,
-  };
+  }), [addNotification, removeNotification, setLoading, state, toggleModal]);
   
   return (
     <AppContext.Provider value={contextValue}>

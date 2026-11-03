@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useCallback, useState, useEffect } from 'react';
 import {
   Heart,
   TrendingUp,
@@ -8,10 +8,6 @@ import {
   Shield,
   BarChart3,
   Brain,
-  Moon,
-  Activity,
-  Target,
-  AlertTriangle,
   CheckCircle,
   Plus,
   Eye,
@@ -39,6 +35,10 @@ interface ClientProfileData {
   zkProofs: ZKMoodProof[];
   analytics: ProgressAnalytics | null;
 }
+
+type TimeRange = 'week' | 'month' | 'quarter';
+type PrivacyLevel = ClientProfileData['personalInfo']['preferences']['privacyLevel'];
+type DataRetention = ClientProfileData['personalInfo']['preferences']['dataRetention'];
 
 const ZKClientProfile: React.FC = () => {
   const { currentSession } = useZKIdentity();
@@ -72,7 +72,7 @@ const ZKClientProfile: React.FC = () => {
   const [isRecordingMood, setIsRecordingMood] = useState(false);
   const [showPrivateData, setShowPrivateData] = useState(false);
   const [isLoadingAnalytics, setIsLoadingAnalytics] = useState(false);
-  const [selectedTimeRange, setSelectedTimeRange] = useState<'week' | 'month' | 'quarter'>('month');
+  const [selectedTimeRange, setSelectedTimeRange] = useState<TimeRange>('month');
 
   // Mood tag options
   const moodTags = [
@@ -81,25 +81,21 @@ const ZKClientProfile: React.FC = () => {
     'motivated', 'unmotivated', 'grateful', 'frustrated'
   ];
 
-  useEffect(() => {
-    loadProfileData();
-  }, [address, currentSession]);
-
-  const loadProfileData = async () => {
+  const loadProfileData = useCallback(async () => {
     try {
       const savedProfile = localStorage.getItem(`client_profile_${address}`);
       if (savedProfile) {
         setProfileData(JSON.parse(savedProfile));
       }
       
-      // Generate analytics if we have data
-      if (currentSession?.profile?.zkCommitment && profileData.moodHistory.length > 0) {
-        generateAnalytics();
-      }
     } catch (error) {
       console.error('Failed to load profile data:', error);
     }
-  };
+  }, [address]);
+
+  useEffect(() => {
+    void loadProfileData();
+  }, [loadProfileData]);
 
   const recordMoodEntry = async () => {
     if (!currentSession?.profile?.zkCommitment) return;
@@ -246,26 +242,6 @@ const ZKClientProfile: React.FC = () => {
       tags: prev.tags.includes(tag) 
         ? prev.tags.filter(t => t !== tag)
         : [...prev.tags, tag]
-    }));
-  };
-
-  const addGoal = (goal: string) => {
-    setProfileData(prev => ({
-      ...prev,
-      personalInfo: {
-        ...prev.personalInfo,
-        goals: [...prev.personalInfo.goals, goal]
-      }
-    }));
-  };
-
-  const removeGoal = (goal: string) => {
-    setProfileData(prev => ({
-      ...prev,
-      personalInfo: {
-        ...prev.personalInfo,
-        goals: prev.personalInfo.goals.filter(g => g !== goal)
-      }
     }));
   };
 
@@ -494,7 +470,7 @@ const ZKClientProfile: React.FC = () => {
                   </h3>
                   <select
                     value={selectedTimeRange}
-                    onChange={(e) => setSelectedTimeRange(e.target.value as any)}
+                    onChange={(e) => setSelectedTimeRange(e.target.value as TimeRange)}
                     className="text-sm border border-gray-300 rounded px-2 py-1"
                   >
                     <option value="week">Past Week</option>
@@ -611,7 +587,7 @@ const ZKClientProfile: React.FC = () => {
                           ...prev.personalInfo,
                           preferences: {
                             ...prev.personalInfo.preferences,
-                            privacyLevel: e.target.value as any
+                            privacyLevel: e.target.value as PrivacyLevel
                           }
                         }
                       }))}
@@ -633,7 +609,7 @@ const ZKClientProfile: React.FC = () => {
                           ...prev.personalInfo,
                           preferences: {
                             ...prev.personalInfo.preferences,
-                            dataRetention: e.target.value as any
+                            dataRetention: e.target.value as DataRetention
                           }
                         }
                       }))}

@@ -1,6 +1,7 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useCallback, useContext, useState, useEffect, ReactNode } from 'react';
+import type { BrowserProvider, Eip1193Provider, JsonRpcSigner } from 'ethers';
 import { SUPPORTED_CHAINS } from '@/config/contracts';
 import { useApp } from '@/stores/AppProvider';
 
@@ -11,8 +12,8 @@ interface WalletState {
   chainId: number | null;
   isConnecting: boolean;
   error: string | null;
-  provider: any | null;
-  signer: any | null;
+  provider: BrowserProvider | null;
+  signer: JsonRpcSigner | null;
 }
 
 interface Web3WalletContextType extends WalletState {
@@ -26,7 +27,22 @@ const Web3WalletContext = createContext<Web3WalletContextType | undefined>(undef
 
 interface Eip6963Detail {
   info: { uuid: string; name: string; icon: string; rdns: string };
-  provider: any;
+  provider: InjectedProvider;
+}
+
+interface InjectedProvider extends Eip1193Provider {
+  isMetaMask?: boolean;
+  providers?: InjectedProvider[];
+  on?: (event: string, listener: (...args: unknown[]) => void) => void;
+  removeListener?: (event: string, listener: (...args: unknown[]) => void) => void;
+}
+
+interface WalletError {
+  code?: number | string;
+  message?: string;
+  shortMessage?: string;
+  data?: { originalError?: { code?: number | string } };
+  info?: { error?: { code?: number | string } };
 }
 const discovered = new Map<string, Eip6963Detail>();
 if (typeof window !== 'undefined') {
@@ -41,27 +57,32 @@ if (typeof window !== 'undefined') {
  * Pick an injected EIP-1193 provider. Prefers wallets announced via EIP-6963 (MetaMask first),
  * then falls back to window.ethereum (unwrapping multi-wallet shims).
  */
-function getInjectedProvider(): any | null {
+function getInjectedProvider(): InjectedProvider | null {
   if (typeof window === 'undefined') return null;
   if (discovered.size > 0) {
     const mm = discovered.get('io.metamask') ?? discovered.get('io.metamask.flask');
     const first = mm ?? Array.from(discovered.values())[0];
     if (first) return first.provider;
   }
-  const eth = (window as any).ethereum;
+  const eth = window.ethereum;
   if (!eth) return null;
   if (Array.isArray(eth.providers) && eth.providers.length > 0) {
-    return eth.providers.find((p: any) => p.isMetaMask) ?? eth.providers[0];
+    return eth.providers.find(provider => provider.isMetaMask) ?? eth.providers[0];
   }
   return eth;
 }
 
-function describeWalletError(error: any): string {
-  const code = error?.code ?? error?.info?.error?.code;
-  if (code === 4001 || error?.code === 'ACTION_REJECTED') return 'Connection request was rejected in the wallet.';
+function asWalletError(error: unknown): WalletError {
+  return typeof error === 'object' && error !== null ? error as WalletError : {};
+}
+
+function describeWalletError(error: unknown): string {
+  const walletError = asWalletError(error);
+  const code = walletError.code ?? walletError.info?.error?.code;
+  if (code === 4001 || walletError.code === 'ACTION_REJECTED') return 'Connection request was rejected in the wallet.';
   if (code === -32002) return 'A connection request is already open. Click the wallet extension icon in your browser toolbar to approve it.';
   if (code === 4100) return 'The wallet is locked. Unlock it and try again.';
-  return error?.shortMessage || error?.message || 'Failed to connect wallet';
+  return walletError.shortMessage || walletError.message || 'Failed to connect wallet';
 }
 
 interface Web3WalletProviderProps {
@@ -86,7 +107,25 @@ export const Web3WalletProvider: React.FC<Web3WalletProviderProps> = ({ children
     return ethers;
   };
 
-  const connectWallet = async (): Promise<void> => {
+  const syncWallet = useCallback(async (ethereum: InjectedProvider): Promise<void> => {
+    const ethers = await getEthers();
+    const provider = new ethers.BrowserProvider(ethereum);
+    const signer = await provider.getSigner();
+    const address = await signer.getAddress();
+    const network = await provider.getNetwork();
+
+    setWalletState({
+      isConnected: true,
+      address,
+      chainId: Number(network.chainId),
+      isConnecting: false,
+      error: null,
+      provider,
+      signer
+    });
+  }, []);
+
+  const connectWallet = useCallback(async (): Promise<void> => {
     setWalletState(prev => ({ ...prev, isConnecting: true, error: null }));
 
     try {
@@ -101,29 +140,9 @@ export const Web3WalletProvider: React.FC<Web3WalletProviderProps> = ({ children
         throw new Error('The wallet returned no accounts. Unlock it and select an account.');
       }
 
-      // Initialize ethers provider
-      const ethers = await getEthers();
-      const provider = new ethers.BrowserProvider(ethereum);
-      const signer = await provider.getSigner();
-      const address = await signer.getAddress();
-      const network = await provider.getNetwork();
+      await syncWallet(ethereum);
 
-      setWalletState({
-        isConnected: true,
-        address,
-        chainId: Number(network.chainId),
-        isConnecting: false,
-        error: null,
-        provider,
-        signer
-      });
-
-      console.log('Wallet connected:', {
-        address,
-        chainId: Number(network.chainId)
-      });
-
-    } catch (error: any) {
+    } catch (error: unknown) {
       const errorMessage = describeWalletError(error);
       setWalletState(prev => ({
         ...prev,
@@ -133,9 +152,9 @@ export const Web3WalletProvider: React.FC<Web3WalletProviderProps> = ({ children
       addNotification({ type: 'error', title: 'Wallet connection failed', message: errorMessage });
       console.error('Wallet connection error:', error);
     }
-  };
+  }, [addNotification, syncWallet]);
 
-  const disconnectWallet = (): void => {
+  const disconnectWallet = useCallback((): void => {
     setWalletState({
       isConnected: false,
       address: null,
@@ -146,7 +165,7 @@ export const Web3WalletProvider: React.FC<Web3WalletProviderProps> = ({ children
       signer: null
     });
     console.log('Wallet disconnected');
-  };
+  }, []);
 
   const signMessage = async (message: string): Promise<string> => {
     if (!walletState.signer) {
@@ -157,9 +176,10 @@ export const Web3WalletProvider: React.FC<Web3WalletProviderProps> = ({ children
       const signature = await walletState.signer.signMessage(message);
       console.log('Message signed:', { message, signature });
       return signature;
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const walletError = asWalletError(error);
       console.error('Message signing error:', error);
-      throw new Error(error?.message || 'Failed to sign message');
+      throw new Error(walletError.message || 'Failed to sign message');
     }
   };
 
@@ -172,9 +192,10 @@ export const Web3WalletProvider: React.FC<Web3WalletProviderProps> = ({ children
 
     try {
       await ethereum.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: hexId }] });
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const walletError = asWalletError(error);
       // 4902: chain not added to the wallet yet
-      const code = error?.code ?? error?.data?.originalError?.code;
+      const code = walletError.code ?? walletError.data?.originalError?.code;
       const chain = SUPPORTED_CHAINS[targetChainId];
       if (code === 4902 && chain) {
         await ethereum.request({
@@ -192,7 +213,7 @@ export const Web3WalletProvider: React.FC<Web3WalletProviderProps> = ({ children
         return;
       }
       console.error('Chain switch error:', error);
-      throw new Error(error?.message || 'Failed to switch chain');
+      throw new Error(walletError.message || 'Failed to switch chain');
     }
   };
 
@@ -205,27 +226,11 @@ export const Web3WalletProvider: React.FC<Web3WalletProviderProps> = ({ children
       }
 
       try {
-        const accounts = await ethereum.request({ method: 'eth_accounts' });
+        const accounts = await ethereum.request({ method: 'eth_accounts' }) as string[];
         
         if (accounts && accounts.length > 0) {
           // Auto-connect if previously connected
-          const ethers = await getEthers();
-          const provider = new ethers.BrowserProvider(ethereum);
-          const signer = await provider.getSigner();
-          const address = await signer.getAddress();
-          const network = await provider.getNetwork();
-
-          setWalletState({
-            isConnected: true,
-            address,
-            chainId: Number(network.chainId),
-            isConnecting: false,
-            error: null,
-            provider,
-            signer
-          });
-
-          console.log('Auto-connected wallet:', address);
+          await syncWallet(ethereum);
         }
       } catch (error) {
         console.warn('Auto-connect failed:', error);
@@ -233,39 +238,43 @@ export const Web3WalletProvider: React.FC<Web3WalletProviderProps> = ({ children
     };
 
     checkConnection();
-  }, []);
+  }, [syncWallet]);
 
   // Listen for account and chain changes
   useEffect(() => {
     const ethereum = getInjectedProvider();
-    if (!ethereum || typeof ethereum.on !== 'function') {
+    if (!ethereum || typeof ethereum.on !== 'function' || typeof ethereum.removeListener !== 'function') {
       return;
     }
+    const addListener = ethereum.on;
+    const removeListener = ethereum.removeListener;
 
-    const handleAccountsChanged = async (accounts: string[]) => {
+    const handleAccountsChanged = async (value: unknown) => {
+      const accounts = Array.isArray(value) ? value.filter((account): account is string => typeof account === 'string') : [];
       if (accounts.length === 0) {
         disconnectWallet();
       } else if (accounts[0] !== walletState.address) {
-        // Reconnect with new account
-        await connectWallet();
+        // Refresh ethers state without opening another account-access prompt.
+        await syncWallet(ethereum);
       }
     };
 
-    const handleChainChanged = (chainId: string) => {
+    const handleChainChanged = (value: unknown) => {
+      if (typeof value !== 'string') return;
       setWalletState(prev => ({
         ...prev,
-        chainId: parseInt(chainId, 16)
+        chainId: parseInt(value, 16)
       }));
     };
 
-    ethereum.on('accountsChanged', handleAccountsChanged);
-    ethereum.on('chainChanged', handleChainChanged);
+    addListener('accountsChanged', handleAccountsChanged);
+    addListener('chainChanged', handleChainChanged);
 
     return () => {
-      ethereum.removeListener('accountsChanged', handleAccountsChanged);
-      ethereum.removeListener('chainChanged', handleChainChanged);
+      removeListener('accountsChanged', handleAccountsChanged);
+      removeListener('chainChanged', handleChainChanged);
     };
-  }, [walletState.address]);
+  }, [disconnectWallet, syncWallet, walletState.address]);
 
   const contextValue: Web3WalletContextType = {
     ...walletState,

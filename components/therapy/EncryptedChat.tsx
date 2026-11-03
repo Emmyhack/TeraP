@@ -25,18 +25,15 @@ export const EncryptedChat: React.FC<EncryptedChatProps> = ({
   sessionId,
   therapistId,
   clientId,
-  userRole,
   onSessionEnd
 }) => {
   const { address } = useWeb3Wallet();
   const [messages, setMessages] = useState<EncryptedMessage[]>([]);
   const [currentMessage, setCurrentMessage] = useState('');
-  const [isConnected, setIsConnected] = useState(false);
   const [chatSession, setChatSession] = useState<ChatSession | null>(null);
   const [isAudioActive, setIsAudioActive] = useState(false);
   const [isCallActive, setIsCallActive] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState<'connecting' | 'connected' | 'disconnected'>('connecting');
-  const [encryptionStatus, setEncryptionStatus] = useState<'secure' | 'insecure'>('secure');
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const localAudioRef = useRef<HTMLAudioElement>(null);
@@ -54,7 +51,6 @@ export const EncryptedChat: React.FC<EncryptedChatProps> = ({
           sessionId
         );
         setChatSession(session);
-        setIsConnected(true);
         setConnectionStatus('connected');
         
         // Add system message
@@ -94,7 +90,7 @@ export const EncryptedChat: React.FC<EncryptedChatProps> = ({
       if (data.sessionId === sessionId) {
         setIsCallActive(true);
         // Auto-accept call for demo (in production, show accept/decline UI)
-        acceptVoiceCall(data.callId);
+        acceptVoiceCall();
       }
     };
 
@@ -117,7 +113,7 @@ export const EncryptedChat: React.FC<EncryptedChatProps> = ({
   }, [sessionId]);
 
   // Accept incoming voice call
-  const acceptVoiceCall = async (callId: string) => {
+  const acceptVoiceCall = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
         video: false,
@@ -164,7 +160,7 @@ export const EncryptedChat: React.FC<EncryptedChatProps> = ({
     if (!address || !chatSession) return;
 
     try {
-      const voiceCall = await encryptedCommunicationService.startVideoCall(sessionId, address);
+      await encryptedCommunicationService.startVideoCall(sessionId, address);
       setIsCallActive(true);
       setIsAudioActive(true);
       
