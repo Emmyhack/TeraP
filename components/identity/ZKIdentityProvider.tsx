@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useCallback, useContext, useState, useEffect, ReactNode } from 'react';
 import { ZKIdentity, AnonymousProfile, AnonymousSession, ZKProof } from '@/services/ZKIdentityService';
 import { useWeb3Wallet } from '@/components/wallet/Web3WalletProvider';
 
@@ -37,6 +37,10 @@ interface ZKIdentityProviderProps {
   children: ReactNode;
 }
 
+function getErrorMessage(error: unknown, fallback: string): string {
+  return error instanceof Error ? error.message : fallback;
+}
+
 export const ZKIdentityProvider: React.FC<ZKIdentityProviderProps> = ({ children }) => {
   const [currentSession, setCurrentSession] = useState<AnonymousSession | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -48,7 +52,7 @@ export const ZKIdentityProvider: React.FC<ZKIdentityProviderProps> = ({ children
   const isAuthenticated = !!currentSession && !!zkIdentity;
 
   // Create new ZK identity
-  const createZKIdentity = async (profileData: Partial<AnonymousProfile>): Promise<void> => {
+  const createZKIdentity = useCallback(async (profileData: Partial<AnonymousProfile>): Promise<void> => {
     if (!walletConnected || !walletAddress) {
       throw new Error('Wallet must be connected to create identity');
     }
@@ -109,17 +113,17 @@ export const ZKIdentityProvider: React.FC<ZKIdentityProviderProps> = ({ children
         displayName: profile.displayName
       });
 
-    } catch (err: any) {
-      const errorMessage = err?.message || 'Failed to create ZK identity';
+    } catch (err: unknown) {
+      const errorMessage = getErrorMessage(err, 'Failed to create ZK identity');
       setError(errorMessage);
       throw new Error(errorMessage);
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [signMessage, walletAddress, walletConnected]);
 
   // Authenticate with existing ZK identity
-  const authenticateWithZK = async (commitment: string): Promise<void> => {
+  const authenticateWithZK = useCallback(async (commitment: string): Promise<void> => {
     if (!walletConnected || !walletAddress) {
       throw new Error('Wallet must be connected to authenticate');
     }
@@ -162,25 +166,25 @@ export const ZKIdentityProvider: React.FC<ZKIdentityProviderProps> = ({ children
 
       console.log('Authenticated with ZK identity:', commitment);
 
-    } catch (err: any) {
-      const errorMessage = err?.message || 'Authentication failed';
+    } catch (err: unknown) {
+      const errorMessage = getErrorMessage(err, 'Authentication failed');
       setError(errorMessage);
       throw new Error(errorMessage);
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [walletAddress, walletConnected]);
 
   // Logout
-  const logout = (): void => {
+  const logout = useCallback((): void => {
     setCurrentSession(null);
     setZkIdentity(null);
     setError(null);
     console.log('Logged out from ZK identity');
-  };
+  }, []);
 
   // Update profile
-  const updateProfile = async (updates: Partial<AnonymousProfile>): Promise<void> => {
+  const updateProfile = useCallback(async (updates: Partial<AnonymousProfile>): Promise<void> => {
     if (!currentSession || !zkIdentity) {
       throw new Error('No active session');
     }
@@ -200,15 +204,15 @@ export const ZKIdentityProvider: React.FC<ZKIdentityProviderProps> = ({ children
       setCurrentSession(prev => prev ? { ...prev, profile: updatedProfile } : null);
       
       console.log('Profile updated');
-    } catch (err: any) {
-      const errorMessage = err?.message || 'Failed to update profile';
+    } catch (err: unknown) {
+      const errorMessage = getErrorMessage(err, 'Failed to update profile');
       setError(errorMessage);
       throw new Error(errorMessage);
     }
-  };
+  }, [currentSession, zkIdentity]);
 
   // Generate ZK proof
-  const generateProof = async (signal: string, externalNullifier: string): Promise<ZKProof> => {
+  const generateProof = useCallback(async (signal: string, externalNullifier: string): Promise<ZKProof> => {
     if (!zkIdentity) {
       throw new Error('No ZK identity available');
     }
@@ -226,15 +230,15 @@ export const ZKIdentityProvider: React.FC<ZKIdentityProviderProps> = ({ children
       }
 
       return proof;
-    } catch (err: any) {
-      const errorMessage = err?.message || 'Failed to generate proof';
+    } catch (err: unknown) {
+      const errorMessage = getErrorMessage(err, 'Failed to generate proof');
       setError(errorMessage);
       throw new Error(errorMessage);
     }
-  };
+  }, [currentSession, zkIdentity]);
 
   // Get stored identities for this wallet
-  const getStoredIdentities = async (): Promise<Array<{
+  const getStoredIdentities = useCallback(async (): Promise<Array<{
     commitment: string;
     displayName: string;
     role: 'client' | 'therapist';
@@ -271,10 +275,10 @@ export const ZKIdentityProvider: React.FC<ZKIdentityProviderProps> = ({ children
       console.error('Failed to load identities:', err);
       return [];
     }
-  };
+  }, [walletAddress]);
 
   // Delete identity
-  const deleteIdentity = async (commitment: string): Promise<void> => {
+  const deleteIdentity = useCallback(async (commitment: string): Promise<void> => {
     if (!walletConnected || !walletAddress) {
       throw new Error('Wallet must be connected');
     }
@@ -300,12 +304,12 @@ export const ZKIdentityProvider: React.FC<ZKIdentityProviderProps> = ({ children
       }
 
       console.log('Identity deleted:', commitment);
-    } catch (err: any) {
-      const errorMessage = err?.message || 'Failed to delete identity';
+    } catch (err: unknown) {
+      const errorMessage = getErrorMessage(err, 'Failed to delete identity');
       setError(errorMessage);
       throw new Error(errorMessage);
     }
-  };
+  }, [currentSession, logout, walletAddress, walletConnected]);
 
   // Auto-load session on wallet connection
   useEffect(() => {
@@ -324,7 +328,7 @@ export const ZKIdentityProvider: React.FC<ZKIdentityProviderProps> = ({ children
     };
 
     loadExistingSession();
-  }, [walletConnected, walletAddress]);
+  }, [authenticateWithZK, currentSession, getStoredIdentities, walletAddress, walletConnected]);
 
   const contextValue: ZKIdentityContextType = {
     currentSession,

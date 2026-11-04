@@ -1,11 +1,15 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useCallback, useState, useEffect } from 'react';
 import { Shield, User, Stethoscope, Wallet, Plus, LogIn, Trash2, Key, CheckCircle } from 'lucide-react';
 import { useZKIdentity } from './ZKIdentityProvider';
 import { useWeb3Wallet } from '@/components/wallet/Web3WalletProvider';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import UserProfile from './UserProfile';
+
+function getErrorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : 'Unknown error';
+}
 
 interface StoredZKIdentity {
   commitment: string;
@@ -16,16 +20,13 @@ interface StoredZKIdentity {
 
 const ZKIdentityManagement: React.FC = () => {
   const {
-    currentSession,
     isAuthenticated,
     isLoading: authLoading,
     error,
     createZKIdentity,
     authenticateWithZK,
-    logout,
     getStoredIdentities,
-    deleteIdentity,
-    updateProfile
+    deleteIdentity
   } = useZKIdentity();
 
   const {
@@ -59,11 +60,7 @@ const ZKIdentityManagement: React.FC = () => {
     'Stress Management', 'Sleep Disorders', 'Chronic Pain', 'LGBTQ+ Issues'
   ];
 
-  useEffect(() => {
-    loadStoredIdentities();
-  }, [walletConnected, walletAddress]);
-
-  const loadStoredIdentities = async () => {
+  const loadStoredIdentities = useCallback(async () => {
     if (!walletConnected) return;
     
     try {
@@ -78,7 +75,11 @@ const ZKIdentityManagement: React.FC = () => {
     } catch (err) {
       console.error('Failed to load identities:', err);
     }
-  };
+  }, [getStoredIdentities, walletConnected]);
+
+  useEffect(() => {
+    void loadStoredIdentities();
+  }, [loadStoredIdentities, walletAddress]);
 
   const handleCreateIdentity = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -119,9 +120,9 @@ const ZKIdentityManagement: React.FC = () => {
 
       console.log('ZK Identity created and authenticated successfully');
       
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Failed to create ZK identity:', error);
-      alert(`Failed to create identity: ${error.message}`);
+      alert(`Failed to create identity: ${getErrorMessage(error)}`);
     } finally {
       setIsLoading(false);
     }
@@ -137,9 +138,9 @@ const ZKIdentityManagement: React.FC = () => {
       setIsLoading(true);
       await authenticateWithZK(selectedIdentity.commitment);
       console.log('Authenticated successfully');
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Authentication failed:', error);
-      alert(`Authentication failed: ${error.message}`);
+      alert(`Authentication failed: ${getErrorMessage(error)}`);
     } finally {
       setIsLoading(false);
     }
@@ -152,11 +153,11 @@ const ZKIdentityManagement: React.FC = () => {
     try {
       setIsLoading(true);
       await deleteIdentity(identity.commitment);
-      loadStoredIdentities();
+      await loadStoredIdentities();
       alert('Identity deleted successfully');
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Failed to delete identity:', error);
-      alert(`Failed to delete identity: ${error.message}`);
+      alert(`Failed to delete identity: ${getErrorMessage(error)}`);
     } finally {
       setIsLoading(false);
     }

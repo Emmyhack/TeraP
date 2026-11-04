@@ -1,16 +1,14 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useCallback, useState, useEffect } from 'react';
 import {
   Shield,
   CheckCircle,
   Upload,
   Star,
   Award,
-  FileText,
   Clock,
   Users,
-  TrendingUp,
   Eye,
   EyeOff,
   Zap,
@@ -35,7 +33,7 @@ interface TherapistProfileData {
   };
   credentials: TherapistCredential | null;
   verificationProof: ZKCredentialProof | null;
-  publicProfile: any;
+  publicProfile: Awaited<ReturnType<typeof zkCredentialService.generateAnonymousProfile>> | null;
 }
 
 const ZKTherapistProfile: React.FC = () => {
@@ -83,11 +81,7 @@ const ZKTherapistProfile: React.FC = () => {
   }, [onChainProfile, address]);
 
   // Load existing profile data
-  useEffect(() => {
-    loadProfileData();
-  }, [address, currentSession]);
-
-  const loadProfileData = async () => {
+  const loadProfileData = useCallback(async () => {
     try {
       // Load existing profile from localStorage or blockchain
       const savedProfile = localStorage.getItem(`therapist_profile_${address}`);
@@ -101,7 +95,11 @@ const ZKTherapistProfile: React.FC = () => {
     } catch (error) {
       console.error('Failed to load profile data:', error);
     }
-  };
+  }, [address]);
+
+  useEffect(() => {
+    void loadProfileData();
+  }, [loadProfileData]);
 
   const handleCredentialUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -195,7 +193,10 @@ const ZKTherapistProfile: React.FC = () => {
     }
   };
 
-  const updateBasicInfo = (field: string, value: any) => {
+  const updateBasicInfo = <K extends keyof TherapistProfileData['basicInfo'],>(
+    field: K,
+    value: TherapistProfileData['basicInfo'][K]
+  ) => {
     setProfileData(prev => ({
       ...prev,
       basicInfo: {
